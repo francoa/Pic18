@@ -1,0 +1,10 @@
+build
+dist
+debug
+documents
+Pic18.X/nbproject/private
+Pic18.X/nbproject/*.mk
+Pic18.X/nbproject/*.bash
+Pic18.X/nbproject/Makefile-genesis.properties
+*.pdsbak
+*.workspace
