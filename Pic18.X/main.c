@@ -49,7 +49,6 @@ void main(void)
 
     while(1)
     {
-        led_demo();
     }
 
 }

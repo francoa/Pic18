@@ -27,6 +27,8 @@
     #define _XTAL_FREQ      20000000L
 #endif
 
+// BEWARE OF INTERRUPTS
+
 #define fLED_1              LATAbits.LATA0
 #define fLED_2              LATAbits.LATA1
 #define fLED_3              LATAbits.LATA2
