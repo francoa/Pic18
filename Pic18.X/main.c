@@ -24,7 +24,9 @@
 #endif
 
 #include "system.h"        /* System funct/params, like osc/peripheral config */
-#include "user_usart.h"         
+#include "user_usart.h"   
+#include "user_led.h"
+//#include "interrupts.c"
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -44,10 +46,10 @@ void main(void)
     /* TODO <INSERT USER APPLICATION CODE HERE> */
 
     usart_init(9600);
-    
+
     while(1)
     {
-        usart_demo_noInterrupts();
+        led_demo();
     }
 
 }

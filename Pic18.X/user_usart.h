@@ -27,10 +27,9 @@
 
 #endif
 
-#include <usart.h>
-
 void usart_init(int);
 void usart_demo_noInterrupts();
+void usart_demo_interrupts();
 
 int sp;
 char c;

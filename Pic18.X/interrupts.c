@@ -34,12 +34,13 @@ void high_isr(void)
 #endif
 
 {
-
       /* This code stub shows general interrupt handling.  Note that these
       conditional statements are not handled within 3 seperate if blocks.
       Do not use a seperate if block for each interrupt flag to avoid run
       time errors. */
 
+    
+    
 #if 0
     
       /* TODO Add High Priority interrupt routine code here. */
@@ -73,17 +74,17 @@ void low_isr(void)
 #error "Invalid compiler selection for implemented ISR routines"
 #endif
 {
+    /* This code stub shows general interrupt handling.  Note that these
+    conditional statements are not handled within 3 seperate if blocks.
+    Do not use a seperate if block for each interrupt flag to avoid run
+    time errors. */
 
-      /* This code stub shows general interrupt handling.  Note that these
-      conditional statements are not handled within 3 seperate if blocks.
-      Do not use a seperate if block for each interrupt flag to avoid run
-      time errors. */
+    /* TODO Add Low Priority interrupt routine code here. */
 
 #if 0
+    /* Determine which flag generated the interrupt */
 
-      /* TODO Add Low Priority interrupt routine code here. */
-
-      /* Determine which flag generated the interrupt */
+    
       if(<Interrupt Flag 1>)
       {
           <Interrupt Flag 1=0>; /* Clear Interrupt Flag 1 */
@@ -96,7 +97,5 @@ void low_isr(void)
       {
           /* Unhandled interrupts */
       }
-
 #endif
-
 }
