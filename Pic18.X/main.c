@@ -17,14 +17,14 @@
 
 #endif
 
-#include "system.h"        /* System funct/params, like osc/peripheral config */
-#include "user.h"          /* User funct/params, such as InitApp */
-
 #ifdef PIC18F2550
     #include "configuration_bits_2550.c"
 #elif PIC18F4550
     #include "configuration_bits_4550.c"
 #endif
+
+#include "system.h"        /* System funct/params, like osc/peripheral config */
+#include "user_usart.h"         
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -41,14 +41,13 @@ void main(void)
     /* Configure the oscillator for the device */
     ConfigureOscillator();
 
-    /* Initialize I/O and Peripherals for application */
-    InitApp();
-
     /* TODO <INSERT USER APPLICATION CODE HERE> */
 
+    usart_init(9600);
+    
     while(1)
     {
-
+        usart_demo_noInterrupts();
     }
 
 }
