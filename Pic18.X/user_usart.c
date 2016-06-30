@@ -26,8 +26,10 @@ void usart_init(int baudrate){
     BAUDCON = BAUDCON & 0b11001111;     //BAUDCON<4,5>
     
     /*If interrupts are desired, set enable bit TXIE/RCIE.*/
-    //PIE1bits.RCIE = 1;
+    PIE1bits.RCIE = 1;
     //PIE1bits.TXIE = 1;
+    IPR1bits.RCIP = 0;
+    //IPR1bits.TXIP = 0;
     
     
     /*If 9-bit transmission/reception is desired, set bit
@@ -38,12 +40,6 @@ void usart_init(int baudrate){
     /*Enable the transmission/reception by setting bit TXEN/CREN*/
     TXSTAbits.TXEN = 1;     //TXSTA<5>
     RCSTAbits.CREN = 1;     //RCSTA<4>
-    
-    /*If using interrupts, ensure that the GIE and PEIE
-    bits in the INTCON register (INTCON<7:6>) are
-    set.*/      
-    //INTCONbits.GIE = 1;
-    //INTCONbits.PEIE = 1;
        
 }
 
@@ -51,5 +47,6 @@ void usart_demo_noInterrupts(){
     /*Flag bit, RCIF, will be set when reception is complete*/
     while(!PIR1bits.RCIF);
     c = ReadUSART ();
+    while(!TRMT);
     WriteUSART(c);
 }

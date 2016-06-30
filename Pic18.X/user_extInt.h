@@ -1,16 +1,12 @@
 /* 
- * File:   usart.h
+ * File:   user_int0.h
  * Author: Franco
  *
- * Created on 29 de junio de 2016, 22:49
+ * Created on 30 de junio de 2016, 11:06
  */
 
-#ifndef USER_USART_H
-#define	USER_USART_H
-
-#ifndef _XTAL_FREQ
-    #define _XTAL_FREQ      20000000L
-#endif
+#ifndef USER_EXTINT_H
+#define	USER_EXTINT_H
 
 #if defined(__XC)
     #include <xc.h>         /* XC8 General Include File */
@@ -27,11 +23,7 @@
 
 #endif
 
-void usart_init(int);
-void usart_demo_noInterrupts();
+void extInt_init();
 
-int sp;
-char c;
-
-#endif	/* USER_USART_H */
+#endif	/* USER_EXTINT_H */
 

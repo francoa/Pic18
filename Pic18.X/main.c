@@ -17,16 +17,10 @@
 
 #endif
 
-#ifdef PIC18F2550
-    #include "configuration_bits_2550.c"
-#elif PIC18F4550
-    #include "configuration_bits_4550.c"
-#endif
-
+#include "configuration_bits.c"
 #include "system.h"        /* System funct/params, like osc/peripheral config */
 #include "user_usart.h"   
 #include "user_led.h"
-//#include "interrupts.c"
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -40,16 +34,72 @@
 
 void main(void)
 {
+    ConfigureInterruptPriority();
+    
     /* Configure the oscillator for the device */
     ConfigureOscillator();
 
     /* TODO <INSERT USER APPLICATION CODE HERE> */
 
-    usart_init(9600);
-
+    //usart_init(9600);
+    fLED_1_Init();
+    fLED_2_Init();
+    
     while(1)
     {
     }
 
 }
 
+/******************************************************************************/
+/* Interrupt Routines                                                         */
+/******************************************************************************/
+
+/* High-priority service */
+
+#if defined(__XC) || defined(HI_TECH_C)
+void interrupt high_isr(void)
+#elif defined (__18CXX)
+#pragma code high_isr=0x08
+#pragma interrupt high_isr
+void high_isr(void)
+#else
+#error "Invalid compiler selection for implemented ISR routines"
+#endif
+
+{
+      /* This code stub shows general interrupt handling.  Note that these
+      conditional statements are not handled within 3 seperate if blocks.
+      Do not use a seperate if block for each interrupt flag to avoid run
+      time errors. */
+
+    if (INTCONbits.INT0IF == 1){
+        while(!TRMT);
+        WriteUSART('I');
+        INTCONbits.INT0IF = 0;
+    }
+}
+
+/* Low-priority interrupt routine */
+#if defined(__XC) || defined(HI_TECH_C)
+void low_priority interrupt low_isr(void)
+#elif defined (__18CXX)
+#pragma code low_isr=0x18
+#pragma interruptlow low_isr
+void low_isr(void)
+#else
+#error "Invalid compiler selection for implemented ISR routines"
+#endif
+{
+    /* This code stub shows general interrupt handling.  Note that these
+    conditional statements are not handled within 3 seperate if blocks.
+    Do not use a seperate if block for each interrupt flag to avoid run
+    time errors. */
+
+    if (PIR1bits.RCIF == 1){
+        fLED_1_Toggle();
+        ReadUSART();
+        PIR1bits.RCIF = 0;
+    }
+    
+}
