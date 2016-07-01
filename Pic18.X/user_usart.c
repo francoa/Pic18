@@ -28,8 +28,8 @@ void usart_init(int baudrate){
     /*If interrupts are desired, set enable bit TXIE/RCIE.*/
     PIE1bits.RCIE = 1;
     //PIE1bits.TXIE = 1;
-    IPR1bits.RCIP = 0;
-    //IPR1bits.TXIP = 0;
+    //IPR1bits.RCIP = 0;
+    IPR1bits.TXIP = 0;
     
     
     /*If 9-bit transmission/reception is desired, set bit

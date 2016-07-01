@@ -21,6 +21,7 @@
 #include "system.h"        /* System funct/params, like osc/peripheral config */
 #include "user_usart.h"   
 #include "user_led.h"
+#include "user_spi.h"
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -32,23 +33,32 @@
 /* Main Program                                                               */
 /******************************************************************************/
 
+#define SPI_SLAVE
+
 void main(void)
 {
-    ConfigureInterruptPriority();
+    //ConfigureInterruptPriority();
     
     /* Configure the oscillator for the device */
     ConfigureOscillator();
 
     /* TODO <INSERT USER APPLICATION CODE HERE> */
 
-    //usart_init(9600);
-    fLED_1_Init();
-    fLED_2_Init();
-    
+#ifdef SPI_SLAVE    
+    usart_init(9600);
+    spi_init_slave();
     while(1)
     {
+        spi_demo_noInterrupts_slave();
     }
-
+#else
+    TRISAbits.RA0 = 1;
+    spi_init();
+    while(1)
+    {
+        spi_demo_noInterrupts();
+    }
+#endif
 }
 
 /******************************************************************************/
