@@ -9,7 +9,7 @@
 #define	USER_USART_H
 
 #ifndef _XTAL_FREQ
-    #define _XTAL_FREQ      20000000L
+    #define _XTAL_FREQ      16000000L
 #endif
 
 #if defined(__XC)
@@ -27,7 +27,7 @@
 
 #endif
 
-void usart_init(int);
+void usart_init(int,bool,bool);
 void usart_demo_noInterrupts();
 
 int sp;

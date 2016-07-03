@@ -59,14 +59,10 @@ void spi_init_slave(){
 }
 
 void spi_demo_noInterrupts(){
-    while(!LATAbits.LA0)
     WriteSPI('H');
 }
 
 void spi_demo_noInterrupts_slave(){
-    while(!DataRdySPI());
-    while(!TRMT);
+    while(!DataRdySPI()){}
     c = ReadSPI();
-    if (c == 'H')
-        WriteUSART('O');
 }

@@ -24,7 +24,7 @@
 #endif
 
 #ifndef _XTAL_FREQ
-    #define _XTAL_FREQ      20000000L
+    #define _XTAL_FREQ      16000000L
 #endif
 
 // BEWARE OF INTERRUPTS
@@ -50,6 +50,8 @@
 #define fLED_3_Toggle()     fLED_3 = !fLED_3;
 
 void led_demo();
+
+int i;
 
 #endif	/* USER_LED_H */
 

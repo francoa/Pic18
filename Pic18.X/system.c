@@ -11,19 +11,26 @@ void ConfigureOscillator(void)
     are stable before resuming execution of the main project. */
 }
 
-void ConfigureInterruptPriority(void){
+void ConfigureInterruptPriority(bool ipen){
     /*The interrupt priority feature is enabled by setting the IPEN bit (RCON<7>).*/
-    RCONbits.IPEN = 1;
-    
-    usart_init(9600);
-    
+    if (ipen)
+        RCONbits.IPEN = 1;
+    else
+        RCONbits.IPEN = 0;
+}
+
+void ConfigureInterrupt(void){
     /*When interrupt priority is enabled, there are two bits which enable interrupts
     globally. Setting the GIEH bit (INTCON<7>) enables all
     interrupts that have the priority bit set (high priority).
     Setting the GIEL bit (INTCON<6>) enables all
     interrupts that have the priority bit cleared (low priority).*/
-    INTCONbits.GIEH = 1;
-    //INTCONbits.GIE = 1;
-    INTCONbits.GIEL = 1;
-    //INTCONbits.PEIE = 1;
+    if (RCONbits.IPEN == 1){
+        INTCONbits.GIEH = 1;
+        INTCONbits.GIEL = 1;
+    }
+    else{
+        INTCONbits.PEIE = 1; //Same bit
+        INTCONbits.GIE = 1; //Same bit
+    }
 }

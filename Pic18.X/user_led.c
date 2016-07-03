@@ -29,6 +29,8 @@ void led_demo(){
     fLED_1_Init();
     while(1)  {
         fLED_1_Toggle();
-        __delay_ms(5);
+        for (i=0; i < 500; i++){
+            __delay_ms(5);
+        }
     }
 };

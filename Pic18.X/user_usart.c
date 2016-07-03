@@ -1,6 +1,6 @@
 #include "user_usart.h"
 
-void usart_init(int baudrate){
+void usart_init(int baudrate, bool rxInt, bool txInt){
     
     //EUSART Asynchronous Mode
     
@@ -26,11 +26,18 @@ void usart_init(int baudrate){
     BAUDCON = BAUDCON & 0b11001111;     //BAUDCON<4,5>
     
     /*If interrupts are desired, set enable bit TXIE/RCIE.*/
-    PIE1bits.RCIE = 1;
-    //PIE1bits.TXIE = 1;
-    //IPR1bits.RCIP = 0;
-    IPR1bits.TXIP = 0;
-    
+    if (rxInt){
+        PIE1bits.RCIE = 1;
+        IPR1bits.RCIP = 0; /*Configures interrupt as low priority*/
+    }
+    else
+        PIE1bits.RCIE = 0;
+    if (txInt){
+        PIE1bits.TXIE = 1;
+        IPR1bits.TXIP = 0; /*Configures interrupt as low priority*/
+    }
+    else
+        PIE1bits.TXIE = 0;
     
     /*If 9-bit transmission/reception is desired, set bit
     TX9/RX9. Can be used as address/data bit.*/

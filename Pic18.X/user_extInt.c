@@ -7,6 +7,9 @@ void extInt_init(){
     /*INT0 External Interrupt Enable bit*/
     INTCONbits.INT0IE = 1;
     
+    /*PORTB Pull-up Enable bit*/
+    INTCON2bits.RBPU = 1;
+    
     /*If the corresponding INTEDGx bit in the INTCON2 register is set (= 1), the
     interrupt is triggered by a rising edge; if the bit is clear,
     the trigger is on the falling edge.*/

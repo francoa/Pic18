@@ -3,11 +3,11 @@
 /******************************************************************************/
 
 /* Microcontroller MIPs (FCY) */
-#define SYS_FREQ        20000000L
+#define SYS_FREQ        16000000L
 #define FCY             SYS_FREQ/4
 
 #ifndef _XTAL_FREQ
-    #define _XTAL_FREQ      20000000L
+    #define _XTAL_FREQ      16000000L
 #endif
 
 /******************************************************************************/
@@ -29,9 +29,6 @@
 
 #endif
 
-#include "user_extInt.h"
-#include "user_usart.h"
-
 /******************************************************************************/
 /* System Function Prototypes                                                 */
 /******************************************************************************/
@@ -41,4 +38,5 @@ functions, and other non-peripheral microcontroller initialization functions
 go here. */
 
 void ConfigureOscillator(void); /* Handles clock switching/osc initialization */
-void ConfigureInterruptPriority(void);
+void ConfigureInterruptPriority(bool);
+void ConfigureInterrupt(void);
