@@ -29,6 +29,7 @@
 
 void compare_setup(int us, int ms);
 void compare_init(void);
+void compare_stop(void);
 
 int time;
 float value;

@@ -46,10 +46,15 @@ void compare_setup(int us, int ms){
     
     /*Enable CCP1 interrupt*/
     IPR1bits.CCP1IP = 0;
+    PIR1bits.CCP1IF = 0;
     PIE1bits.CCP1IE = 1;
 }
 
 void compare_init(){ 
     /*Timer1 On bit*/
     T1CONbits.TMR1ON = 1; 
+}
+
+void compare_stop(){
+    T1CONbits.TMR1ON = 0;
 }

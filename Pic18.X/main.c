@@ -31,7 +31,9 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 
-/* i.e. uint8_t <variable_name>; */
+bool dev_present;
+bool exit;
+int j;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -127,12 +129,36 @@ void main(void){
 
 #elif defined (DEV_1WIRE_DEMO)
 void main (void){
+    dev_present = false;
+    exit = false;
+    fLED_1_Init();  //RED LED
+    ConfigureInterruptPriority(true);
+    ConfigureInterrupt();
+    usart_init(9600,false,false);
     
-    compare_setup(300,0);
+    /*INITIALIZATION SEQUENCE*/
     ds18b20_initialization();
-    compare_init();
-    while(1){
+    ds18b20_presence();
+    
+    while(BUS_STATE() == 1 && !exit){__delay_us(3);}
+    if (exit){
+        fLED_1_On();
+        while(1){}
     }
+    else{
+        dev_present = true;
+        compare_stop();
+    }
+    /*INITIALIZATION SEQUENCE*/
+    
+    
+    /*ROM COMMAND*/
+    ds18b20_command(READ_ROM);
+    for (j=0; j<8; j++)
+        WriteUSART(ds18b20_read());
+    
+    /*ROM COMMAND*/
+    while(1){}
 }
 
 #else
@@ -185,7 +211,9 @@ void low_isr(void)
     }
     else if (PIR1bits.CCP1IF == 1)
     {
-        fLED_1_Toggle();
+        compare_stop();
+        if (!dev_present)
+            exit = true;
         TMR1H = 0x00;
         TMR1L = 0x00;
         PIR1bits.CCP1IF = 0;
