@@ -64,5 +64,5 @@ void spi_demo_noInterrupts(){
 
 void spi_demo_noInterrupts_slave(){
     while(!DataRdySPI()){}
-    c = ReadSPI();
+    spi_char = ReadSPI();
 }

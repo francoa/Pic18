@@ -29,9 +29,11 @@
 
 void usart_init(int,bool,bool);
 void usart_demo_noInterrupts();
+void WriteBinUSART(BYTE);
 
-int sp;
-char c;
+int usart_sp;
+char usart_char;
+BYTE usart_slider;
 
 #endif	/* USER_USART_H */
 

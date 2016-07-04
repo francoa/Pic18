@@ -29,23 +29,22 @@
 
 #include "user_compare.h"
 
-#define BUS_LOW()       PORTBbits.RB0 = 0
-#define BUS_HIGH()      PORTBbits.RB0 = 1
-#define BUS_RELEASE()   TRISBbits.TRISB0 = 1
-#define BUS_TAKE()      TRISBbits.TRISB0 = 0; PORTBbits.RB0 = 1
-#define BUS_STATE()     LATBbits.LATB0
+#define BUS_LOW()       LATBbits.LATB0 = 0
+#define BUS_HIGH()      LATBbits.LATB0 = 1
+#define BUS_RELEASE()   LATBbits.LATB0 = 0; TRISBbits.TRISB0 = 1
+#define BUS_TAKE()      LATBbits.LATB0 = 0; TRISBbits.TRISB0 = 0
+#define BUS_STATE()     PORTBbits.RB0
 
-#define TRECOVERY       3
+#define TRECOVERY       5
 #define TSLOT           80
 
 #define TRESETLOW       500
 #define TRESETHIGH      500
 
-#define TWLOW0          80
+#define TWLOW0          60
 #define TWLOW1          5
 
-#define TRLOW           2
-#define TRWAIT          8
+#define TRLOW           6
 #define TRSAMPLE        15
 
 #define SEARCH_ROM      0xF0
@@ -63,12 +62,12 @@
 void ds18b20_initialization(void);
 void ds18b20_presence(void);
 void ds18b20_command(BYTE cmd);
-void ds18b20_write0(void);
-void ds18b20_write1(void);
-BYTE ds18b20_read(void);
+void ds18b20_write(unsigned char write_bit);
+unsigned char ds18b20_read_bit(void);
+BYTE ds18b20_read_byte(void);
 
-int i;
-BYTE slider;
+int ds18b20_counter;
+BYTE ds18b20_slider;
 
 #endif	/* USER_DS18B20_H */
 

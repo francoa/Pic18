@@ -51,7 +51,7 @@
 
 void led_demo();
 
-int i;
+int led_counter;
 
 #endif	/* USER_LED_H */
 

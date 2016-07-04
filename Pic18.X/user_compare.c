@@ -1,7 +1,7 @@
 #include "user_compare.h"
 
 void compare_setup(int us, int ms){
-    time = us + ms*1000;
+    compare_time = us + ms*1000;
     
     /*CCPxM3:CCPxM0: CCPx Module Mode Select bits*/
     CCP1CONbits.CCP1M = 0b1010; //Compare mode: generate software interrupt on compare match 
@@ -40,9 +40,9 @@ void compare_setup(int us, int ms){
     /*The data register. @16MHz, FOSC/4, 0xF0FF = 0.01542s*/
     //1 -> 1000000/(FOSC/4) us
     //x -> time us
-    value = time*(_XTAL_FREQ/4)/(1000000);
-    CCPR1L = (int)value;
-    CCPR1H = (int)value >> 8;
+    compare_value = compare_time*(_XTAL_FREQ/4)/(1000000);
+    CCPR1L = (int)compare_value;
+    CCPR1H = (int)compare_value >> 8;
     
     /*Enable CCP1 interrupt*/
     IPR1bits.CCP1IP = 0;
@@ -52,9 +52,13 @@ void compare_setup(int us, int ms){
 
 void compare_init(){ 
     /*Timer1 On bit*/
+    TMR1H = 0x00;
+    TMR1L = 0x00;
     T1CONbits.TMR1ON = 1; 
 }
 
 void compare_stop(){
     T1CONbits.TMR1ON = 0;
+    TMR1H = 0x00;
+    TMR1L = 0x00;
 }

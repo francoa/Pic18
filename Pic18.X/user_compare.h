@@ -31,8 +31,8 @@ void compare_setup(int us, int ms);
 void compare_init(void);
 void compare_stop(void);
 
-int time;
-float value;
+int compare_time;
+float compare_value;
 
 #endif	/* USER_COMPARE_H */
 

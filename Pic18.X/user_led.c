@@ -29,7 +29,7 @@ void led_demo(){
     fLED_1_Init();
     while(1)  {
         fLED_1_Toggle();
-        for (i=0; i < 500; i++){
+        for (led_counter=0; led_counter < 500; led_counter++){
             __delay_ms(5);
         }
     }

@@ -1,61 +1,63 @@
 #include "user_ds18b20.h"
 
 void ds18b20_initialization(){
-    compare_setup(TRESETHIGH,0);
-    BUS_TAKE();
-    BUS_LOW();
-    __delay_us(TRESETLOW);
-    BUS_RELEASE();
+    compare_setup(TRESETHIGH,0);    // Set Timer1 in compare mode
+    BUS_TAKE();                     // Take Bus
+    BUS_LOW();                      // Drive Bus low
+    __delay_us(TRESETLOW);          // Delay 500us
+    BUS_RELEASE();                  // Release Bus
 }
 
 void ds18b20_presence(){
-    compare_init();
+    compare_init();                 // Start Timer1
 }
 
-void ds18b20_write0(){
-    BUS_TAKE();
-    BUS_LOW();
-    __delay_us(TWLOW0);
-    BUS_RELEASE();
-    __delay_us(TRECOVERY);
-}
-
-void ds18b20_write1(){
-    BUS_TAKE();
-    BUS_LOW();
-    __delay_us(TWLOW1);
-    BUS_RELEASE();
-    __delay_us(TRECOVERY);
-}
-
-BYTE ds18b20_read(){
-    __delay_us(TRECOVERY);
-    slider = 0;
-    WriteUSART('R');
-    for (i=0; i<8; i++){
-        BUS_TAKE();
-        BUS_LOW();
-        __delay_us(TRLOW);
-        BUS_RELEASE();
-        __delay_us(TRWAIT);
-        slider |= (BUS_STATE() << i);
-        WriteUSART(BUS_STATE()+'0');
-        __delay_us(TSLOT-TRSAMPLE);
+void ds18b20_write(unsigned char write_bit){
+    if (write_bit){
+        BUS_TAKE();                         // Take Bus
+        BUS_LOW();                          // Drive Bus low
+        __delay_us(TWLOW1);                 // Delay 5us
+        BUS_RELEASE();                      // Release Bus
+        __delay_us(TSLOT+TRECOVERY-TWLOW1); // Delay 75us       
     }
-    return slider;
+    else{
+        BUS_TAKE();                         // Take Bus
+        BUS_LOW();                          // Drive Bus low
+        __delay_us(TWLOW0);                 // Delay 80us
+        BUS_RELEASE();                      // Release Bus
+        __delay_us(TSLOT+TRECOVERY-TWLOW0); // Delay 5us
+    }
 }
 
 void ds18b20_command(BYTE cmd){
-    __delay_us(TRECOVERY);
-    slider = 1;
-    for(i = 0; i < 8; i++){
-        if ((cmd & (slider << i))!=0){
-            WriteUSART('1');
-            ds18b20_write1();
-        }
-        else{
-            WriteUSART('0');
-            ds18b20_write0();
-        }
+    ds18b20_slider = 1;
+    for(ds18b20_counter = 0; ds18b20_counter < 8; ds18b20_counter++){
+        ds18b20_write(cmd & 0x01);
+        cmd >>= 1;
     }
+}
+
+unsigned char ds18b20_read_bit(){
+    BUS_TAKE();                     // Take Bus
+    BUS_LOW();                      // Drive Bus low
+    __delay_us(TRLOW);              // Delay 6us
+    BUS_RELEASE();                  // Release Bus
+    __delay_us(TRSAMPLE-TRLOW-1);   // Delay 8us
+    ds18b20_slider = BUS_STATE();   // Sample
+    __delay_us(TSLOT+TRECOVERY-TRSAMPLE);   // Delay 70us
+    return ds18b20_slider;
+}
+
+BYTE ds18b20_read_byte(){
+    ds18b20_slider = 0x00;
+    for (ds18b20_counter=0; ds18b20_counter<8; ds18b20_counter++){
+        BUS_TAKE();                     // Take Bus
+        BUS_LOW();                      // Drive Bus low
+        __delay_us(TRLOW);              // Delay 6us
+        BUS_RELEASE();                  // Release Bus
+        __delay_us(TRSAMPLE-TRLOW-1);   // Delay 8us
+        ds18b20_slider |= (BUS_STATE() << ds18b20_counter);     // Sample
+        __delay_us(TSLOT+TRECOVERY-TRSAMPLE);
+    }
+    return ds18b20_slider;
 }

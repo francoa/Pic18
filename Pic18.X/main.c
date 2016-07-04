@@ -34,6 +34,7 @@
 bool dev_present;
 bool exit;
 int j;
+BYTE romVal[9];
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -128,15 +129,12 @@ void main(void){
 
 
 #elif defined (DEV_1WIRE_DEMO)
-void main (void){
+void init_sequence(void){
+    /*INITIALIZATION SEQUENCE*/
     dev_present = false;
     exit = false;
     fLED_1_Init();  //RED LED
-    ConfigureInterruptPriority(true);
-    ConfigureInterrupt();
-    usart_init(9600,false,false);
     
-    /*INITIALIZATION SEQUENCE*/
     ds18b20_initialization();
     ds18b20_presence();
     
@@ -146,17 +144,36 @@ void main (void){
         while(1){}
     }
     else{
-        dev_present = true;
         compare_stop();
+        dev_present = true;
     }
-    /*INITIALIZATION SEQUENCE*/
+    /*INITIALIZATION SEQUENCE*/ 
+}
+
+void main (void){
+    ConfigureInterruptPriority(true);
+    ConfigureInterrupt();
+    usart_init(9600,false,false);
     
+    init_sequence();
+    ds18b20_command(SKIP_ROM);
+    ds18b20_command(CONVERT_T);
+    while(!ds18b20_read_bit());
+    __delay_ms(1);
     
-    /*ROM COMMAND*/
-    ds18b20_command(READ_ROM);
-    for (j=0; j<8; j++)
-        WriteUSART(ds18b20_read());
+    init_sequence();
+    ds18b20_command(SKIP_ROM);
+    ds18b20_command(READ_SCRATCH);
+    for (j=0; j<9; j++)
+        romVal[j] = ds18b20_read_byte();
     
+    while(!TRMT);
+    WriteUSART('R');
+    for (j=8; j>=0; j--){
+        WriteBinUSART(romVal[j]);
+    }
+    while(!TRMT);
+    WriteUSART('R');
     /*ROM COMMAND*/
     while(1){}
 }

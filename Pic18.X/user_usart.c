@@ -12,9 +12,9 @@ void usart_init(int baudrate, bool rxInt, bool txInt){
     BAUDCONbits.BRG16 = 1;  //BAUDCON<3>
     BAUDCONbits.ABDEN = 0;  //BAUDCON<0> No Auto-Baud Detect
     BAUDCONbits.WUE = 0;    //BAUDCON<1> Wake-up disabled
-    sp = (_XTAL_FREQ/baudrate)/4 - 1;       
-    SPBRGH = sp >> 8;
-    SPBRG = (sp << 8) >> 8;
+    usart_sp = (_XTAL_FREQ/baudrate)/4 - 1;       
+    SPBRGH = usart_sp >> 8;
+    SPBRG = (usart_sp << 8) >> 8;
     
     /*Enable the asynchronous serial port by clearing
     bit SYNC and setting bit SPEN.*/
@@ -53,7 +53,20 @@ void usart_init(int baudrate, bool rxInt, bool txInt){
 void usart_demo_noInterrupts(){
     /*Flag bit, RCIF, will be set when reception is complete*/
     while(!PIR1bits.RCIF);
-    c = ReadUSART ();
+    usart_char = ReadUSART ();
     while(!TRMT);
-    WriteUSART(c);
+    WriteUSART(usart_char);
+}
+
+void WriteBinUSART(BYTE val){
+    while(!TRMT);
+    WriteUSART('\r');
+    usart_slider = 1;
+    for (usart_sp = 7; usart_sp>=0; usart_sp--){
+        while(!TRMT);
+        if ((val & (usart_slider << usart_sp))!=0)
+            WriteUSART('1');
+        else
+            WriteUSART('0');
+    }
 }
