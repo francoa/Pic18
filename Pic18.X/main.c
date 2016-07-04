@@ -24,6 +24,8 @@
 #include "user_led.h"
 #include "user_spi.h"
 #include "user_extInt.h"
+#include "user_compare.h"
+#include "user_ds18b20.h"
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -42,7 +44,9 @@
 //#define LED_DEMO
 //#define EXT_INT_DEMO
 //#define SPI_MASTER_DEMO
-#define SPI_SLAVE_DEMO
+//#define SPI_SLAVE_DEMO
+//#define COMPARE_INT_DEMO
+#define DEV_1WIRE_DEMO
 
 #ifdef USART_DEMO
 void main(void)
@@ -109,6 +113,28 @@ void main(void)
     }
 }
 
+#elif defined(COMPARE_INT_DEMO)
+void main(void){
+    fLED_1_Init();
+    ConfigureInterruptPriority(true);
+    ConfigureInterrupt();
+    compare_setup(100,0);
+    compare_init();
+    while(1){
+    }
+}
+
+
+#elif defined (DEV_1WIRE_DEMO)
+void main (void){
+    
+    compare_setup(300,0);
+    ds18b20_initialization();
+    compare_init();
+    while(1){
+    }
+}
+
 #else
 void main(void)
 {
@@ -123,7 +149,7 @@ void main(void)
 
 /* High-priority service */
 
-#if defined(USART_INT_DEMO) || defined(EXT_INT_DEMO)
+#if defined(USART_INT_DEMO) || defined(EXT_INT_DEMO) || defined(COMPARE_INT_DEMO) || defined(DEV_1WIRE_DEMO)
 
 #if defined(__XC) || defined(HI_TECH_C)
 void interrupt high_isr(void)
@@ -156,6 +182,13 @@ void low_isr(void)
         fLED_1_Toggle();
         ReadUSART();
         PIR1bits.RCIF = 0;
+    }
+    else if (PIR1bits.CCP1IF == 1)
+    {
+        fLED_1_Toggle();
+        TMR1H = 0x00;
+        TMR1L = 0x00;
+        PIR1bits.CCP1IF = 0;
     }
 }
 

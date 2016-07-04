@@ -12,6 +12,8 @@
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_led.h</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_extInt.h</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_spi.h</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_ds18b20.h</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_compare.h</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
@@ -30,6 +32,8 @@
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_led.c</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_extInt.c</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_spi.c</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_ds18b20.c</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_compare.c</itemPath>
       </logicalFolder>
       <itemPath>main.c</itemPath>
     </logicalFolder>
