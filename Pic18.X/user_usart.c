@@ -70,3 +70,10 @@ void WriteBinUSART(BYTE val){
             WriteUSART('0');
     }
 }
+
+void WriteByteUSART(BYTE val){
+    while(!TRMT);
+    WriteUSART('\r'); 
+    while(!TRMT);
+    WriteUSART(val); 
+}

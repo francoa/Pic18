@@ -30,6 +30,7 @@
 void usart_init(int,bool,bool);
 void usart_demo_noInterrupts();
 void WriteBinUSART(BYTE);
+void WriteByteUSART(BYTE);
 
 int usart_sp;
 char usart_char;

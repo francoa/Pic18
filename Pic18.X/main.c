@@ -19,14 +19,6 @@
 
 #endif
 
-#include "system.h"        /* System funct/params, like osc/peripheral config */
-#include "user_usart.h"   
-#include "user_led.h"
-#include "user_spi.h"
-#include "user_extInt.h"
-#include "user_compare.h"
-#include "user_ds18b20.h"
-
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
@@ -35,6 +27,10 @@ bool dev_present;
 bool exit;
 int j;
 BYTE romVal[9];
+char command;
+BYTE familyCode;
+BYTE serialNumber[6];
+BYTE crc;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -49,7 +45,24 @@ BYTE romVal[9];
 //#define SPI_MASTER_DEMO
 //#define SPI_SLAVE_DEMO
 //#define COMPARE_INT_DEMO
-#define DEV_1WIRE_DEMO
+//#define DEV_1WIRE_DEMO
+#define DEV_DS18B20_DEBUG
+
+#ifdef DEV_DS18B20_DEBUG
+    #include "system.h"
+    #include "user_usart.h"
+    #include "user_led.h"
+    #include "user_compare.h"
+    #include "user_ds18b20.h"
+#else
+    #include "system.h"        /* System funct/params, like osc/peripheral config */
+    #include "user_usart.h"   
+    #include "user_led.h"
+    #include "user_spi.h"
+    #include "user_extInt.h"
+    #include "user_compare.h"
+    #include "user_ds18b20.h"
+#endif
 
 #ifdef USART_DEMO
 void main(void)
@@ -178,6 +191,101 @@ void main (void){
     while(1){}
 }
 
+#elif defined (DEV_DS18B20_DEBUG)
+
+void init_sequence(void){
+    /*INITIALIZATION SEQUENCE*/
+    dev_present = false;
+    exit = false;
+    fLED_1_Init();  //RED LED
+    
+    ds18b20_initialization();
+    ds18b20_presence();
+    
+    while(BUS_STATE() == 1 && !exit){__delay_us(3);}
+    if (exit){
+        fLED_1_On();
+        while(1){}
+    }
+    else{
+        compare_stop();
+        dev_present = true;
+    }
+    /*INITIALIZATION SEQUENCE*/ 
+}
+
+void command_parse(char cmd){
+    
+    // '1' -> READ_ROM
+    // '5' -> CONVERT_T
+    // '7' -> READ_SCRATCH
+    
+    switch(cmd){
+        case '1':
+            init_sequence();
+            ds18b20_command(READ_ROM);
+            familyCode = ds18b20_read_byte();
+            for (j=0; j<6; j++)
+                serialNumber[j] = ds18b20_read_byte();
+            crc = ds18b20_read_byte();
+            WriteBinUSART(familyCode);
+            for (j=0; j<6; j++)
+                WriteBinUSART(serialNumber[j]);
+            WriteBinUSART(crc);
+            break;
+        case '5':
+            init_sequence();
+            ds18b20_command(SKIP_ROM);
+            ds18b20_command(CONVERT_T);
+            while(!ds18b20_read_bit());
+            __delay_ms(1);
+            WriteByteUSART('E');
+            break;
+        case '7':
+            init_sequence();
+            ds18b20_command(SKIP_ROM);
+            ds18b20_command(READ_SCRATCH);
+            for (j=0; j<9; j++)
+                romVal[j] = ds18b20_read_byte();
+            for (j=0; j<9; j++)
+                WriteBinUSART(romVal[j]);
+            break;
+        default:
+            WriteByteUSART('-');
+            break;
+    }
+}
+
+void main (void){
+    ConfigureInterruptPriority(true);
+    ConfigureInterrupt();
+    usart_init(9600,true,false);
+    
+    while(1){}
+    
+    init_sequence();
+    ds18b20_command(SKIP_ROM);
+    ds18b20_command(CONVERT_T);
+    while(!ds18b20_read_bit());
+    __delay_ms(1);
+    
+    init_sequence();
+    ds18b20_command(SKIP_ROM);
+    ds18b20_command(READ_SCRATCH);
+    for (j=0; j<9; j++)
+        romVal[j] = ds18b20_read_byte();
+    
+    while(!TRMT);
+    WriteUSART('R');
+    for (j=8; j>=0; j--){
+        WriteBinUSART(romVal[j]);
+    }
+    while(!TRMT);
+    WriteUSART('R');
+    /*ROM COMMAND*/
+    while(1){}
+}
+
 #else
 void main(void)
 {
@@ -225,6 +333,50 @@ void low_isr(void)
         fLED_1_Toggle();
         ReadUSART();
         PIR1bits.RCIF = 0;
+    }
+    else if (PIR1bits.CCP1IF == 1)
+    {
+        compare_stop();
+        if (!dev_present)
+            exit = true;
+        TMR1H = 0x00;
+        TMR1L = 0x00;
+        PIR1bits.CCP1IF = 0;
+    }
+}
+
+#endif
+
+#if defined(DEV_DS18B20_DEBUG)
+
+#if defined(__XC) || defined(HI_TECH_C)
+void interrupt high_isr(void)
+#elif defined (__18CXX)
+#pragma code high_isr=0x08
+#pragma interrupt high_isr
+void high_isr(void)
+#else
+#error "Invalid compiler selection for implemented ISR routines"
+#endif
+{
+   
+}
+
+/* Low-priority interrupt routine */
+#if defined(__XC) || defined(HI_TECH_C)
+void low_priority interrupt low_isr(void)
+#elif defined (__18CXX)
+#pragma code low_isr=0x18
+#pragma interruptlow low_isr
+void low_isr(void)
+#else
+#error "Invalid compiler selection for implemented ISR routines"
+#endif
+{
+    if (PIR1bits.RCIF == 1){
+        command=ReadUSART();
+        PIR1bits.RCIF = 0;
+        command_parse(command);
     }
     else if (PIR1bits.CCP1IF == 1)
     {
