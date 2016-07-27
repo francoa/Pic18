@@ -16,6 +16,7 @@
 
 #include <stdint.h>        /* For uint8_t definition */
 #include <stdbool.h>       /* For true/false definition */
+#include <stdio.h>
 
 #endif
 
@@ -25,6 +26,7 @@
 
 bool dev_present;
 bool exit;
+bool busy;
 int j;
 BYTE romVal[9];
 char command;
@@ -210,6 +212,7 @@ void init_sequence(void){
     else{
         compare_stop();
         dev_present = true;
+        __delay_us(TPRESENCE);
     }
     /*INITIALIZATION SEQUENCE*/ 
 }
@@ -222,33 +225,58 @@ void command_parse(char cmd){
     
     switch(cmd){
         case '1':
+            while(!TRMT);
+            putsUSART((char *)"\n\rReadRom:");
+            
             init_sequence();
             ds18b20_command(READ_ROM);
+            
             familyCode = ds18b20_read_byte();
             for (j=0; j<6; j++)
                 serialNumber[j] = ds18b20_read_byte();
             crc = ds18b20_read_byte();
-            WriteBinUSART(familyCode);
-            for (j=0; j<6; j++)
-                WriteBinUSART(serialNumber[j]);
-            WriteBinUSART(crc);
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rFamily Code:");
+            BinToHexUSART(familyCode);
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rRom:");
+            for (j=5; j>=0; j--)
+                BinToHexUSART(serialNumber[j]);
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rCrc:");
+            BinToHexUSART(crc);
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rReady");
             break;
         case '5':
+            while(!TRMT);
+            putsUSART((char *)"\n\rConvertT:");
+            
             init_sequence();
             ds18b20_command(SKIP_ROM);
             ds18b20_command(CONVERT_T);
             while(!ds18b20_read_bit());
             __delay_ms(1);
-            WriteByteUSART('E');
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rReady");
             break;
         case '7':
+            while(!TRMT);
+            putsUSART((char *)"\n\rReadScratch:");
+            
             init_sequence();
             ds18b20_command(SKIP_ROM);
             ds18b20_command(READ_SCRATCH);
-            for (j=0; j<9; j++)
-                romVal[j] = ds18b20_read_byte();
-            for (j=0; j<9; j++)
-                WriteBinUSART(romVal[j]);
+            while(!TRMT);
+            putsUSART(ds18b20_read_T());
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rReady");
             break;
         default:
             WriteByteUSART('-');
@@ -260,29 +288,10 @@ void main (void){
     ConfigureInterruptPriority(true);
     ConfigureInterrupt();
     usart_init(9600,true,false);
-    
-    while(1){}
-    
-    init_sequence();
-    ds18b20_command(SKIP_ROM);
-    ds18b20_command(CONVERT_T);
-    while(!ds18b20_read_bit());
-    __delay_ms(1);
-    
-    init_sequence();
-    ds18b20_command(SKIP_ROM);
-    ds18b20_command(READ_SCRATCH);
-    for (j=0; j<9; j++)
-        romVal[j] = ds18b20_read_byte();
-    
+    busy = false;
     while(!TRMT);
-    WriteUSART('R');
-    for (j=8; j>=0; j--){
-        WriteBinUSART(romVal[j]);
-    }
-    while(!TRMT);
-    WriteUSART('R');
-    /*ROM COMMAND*/
+    putsUSART((char *)"Ready: ");
+    
     while(1){}
 }
 
@@ -374,9 +383,17 @@ void low_isr(void)
 #endif
 {
     if (PIR1bits.RCIF == 1){
-        command=ReadUSART();
         PIR1bits.RCIF = 0;
-        command_parse(command);
+        command=ReadUSART();
+        if (busy){
+            while(!TRMT);
+            putsUSART((char *)"Busy\n\r");
+        }
+        else{
+            busy = true;
+            command_parse(command);
+            busy = false;
+        }
     }
     else if (PIR1bits.CCP1IF == 1)
     {

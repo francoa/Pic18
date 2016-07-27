@@ -60,7 +60,7 @@ void usart_demo_noInterrupts(){
 
 void WriteBinUSART(BYTE val){
     while(!TRMT);
-    WriteUSART('\r');
+    putsUSART((char*)"\n\r");
     usart_slider = 1;
     for (usart_sp = 7; usart_sp>=0; usart_sp--){
         while(!TRMT);
@@ -73,7 +73,18 @@ void WriteBinUSART(BYTE val){
 
 void WriteByteUSART(BYTE val){
     while(!TRMT);
-    WriteUSART('\r'); 
+    putsUSART((char*)"\n\r");
     while(!TRMT);
     WriteUSART(val); 
+}
+
+void BinToHexUSART(BYTE val){
+    while(!TRMT);
+    putsUSART((char*)"\n\r0x");
+    usart_slider = val >> 4;
+    while(!TRMT);
+    WriteUSART(hexChars[usart_slider]);
+    usart_slider = val & 0x0F;
+    while(!TRMT);
+    WriteUSART(hexChars[usart_slider]);
 }
