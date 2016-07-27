@@ -89,12 +89,6 @@ BYTE ds18b20_read_byte(void);
 BYTE ds18b20_read_byte_raw(void);
 char * ds18b20_read_T(void);
 
-int ds18b20_counter;
-int ds18b20_counter2;
-BYTE ds18b20_slider;
-unsigned char ds18b20_bit;
 char ds18b20_temp_str[10];
-BYTE ds18b20_array[9];
-float ds18b20_temperature;
 
 #endif	/* USER_DS18B20_H */

@@ -1,7 +1,7 @@
 #include "user_usart.h"
 
 void usart_init(int baudrate, bool rxInt, bool txInt){
-    
+    int usart_sp;
     //EUSART Asynchronous Mode
     
     /*Initialize the SPBRGH:SPBRG registers for the
@@ -51,6 +51,7 @@ void usart_init(int baudrate, bool rxInt, bool txInt){
 }
 
 void usart_demo_noInterrupts(){
+    char usart_char;
     /*Flag bit, RCIF, will be set when reception is complete*/
     while(!PIR1bits.RCIF);
     usart_char = ReadUSART ();
@@ -59,6 +60,8 @@ void usart_demo_noInterrupts(){
 }
 
 void WriteBinUSART(BYTE val){
+    BYTE usart_slider;
+    int usart_sp;
     while(!TRMT);
     putsUSART((char*)"\n\r");
     usart_slider = 1;
@@ -79,6 +82,7 @@ void WriteByteUSART(BYTE val){
 }
 
 void BinToHexUSART(BYTE val){
+    BYTE usart_slider;
     while(!TRMT);
     putsUSART((char*)"\n\r0x");
     usart_slider = val >> 4;

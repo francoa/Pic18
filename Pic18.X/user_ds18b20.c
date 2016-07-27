@@ -33,14 +33,15 @@ void ds18b20_write(unsigned char write_bit){
 }
 
 void ds18b20_command(BYTE cmd){
-    ds18b20_slider = 1;
-    for(ds18b20_counter = 0; ds18b20_counter < 8; ds18b20_counter++){
+    int counter = 0;
+    for(counter = 0; counter < 8; counter++){
         ds18b20_write(cmd & 0x01);
         cmd >>= 1;
     }
 }
 
 unsigned char ds18b20_read_bit(){
+    unsigned char ds18b20_bit;
     BUS_TAKE();                     // Take Bus
     BUS_LOW();                      // Drive Bus low
     __delay_us(TRLOW);              // Delay 6us
@@ -52,40 +53,34 @@ unsigned char ds18b20_read_bit(){
 }
 
 BYTE ds18b20_read_byte(){
-    ds18b20_slider = 0x00;
-    for (ds18b20_counter2=0; ds18b20_counter2<8; ds18b20_counter2++){
-        ds18b20_slider |= (ds18b20_read_bit() << ds18b20_counter2);
+    BYTE slider = 0x00;
+    int counter = 0;
+    for (counter=0; counter<8; counter++){
+        slider |= (ds18b20_read_bit() << counter);
     }
-    return ds18b20_slider;
+    return slider;
 }
 
 BYTE ds18b20_read_byte_raw(){
-    ds18b20_slider = 0x00;
-    for (ds18b20_counter2=7; ds18b20_counter2>=0; ds18b20_counter2--){
-        ds18b20_slider |= (ds18b20_read_bit() << ds18b20_counter2);
+    BYTE slider = 0x00;
+    int counter = 0;
+    for (counter=7; counter>=0; counter--){
+        slider |= (ds18b20_read_bit() << counter);
     }
-    return ds18b20_slider;
+    return slider;
 }
 
 char * ds18b20_read_T(void){
-    for (ds18b20_counter=0; ds18b20_counter<9; ds18b20_counter++)
-        ds18b20_array[ds18b20_counter] = ds18b20_read_byte();
+    int counter = 0;
+    BYTE scratchPad[9];
+    float temperature;
     
+    for (counter=0; counter<9; counter++)
+        scratchPad[counter] = ds18b20_read_byte();
     
-    
-    //ds18b20_temp_lsb = (((ds18b20_temp_lsb >> 4) | (ds18b20_temp_msb << 4)) & 0x7F); //dont care about decimals
-    //ds18b20_temp_msb = ds18b20_temp_msb & 0x80; //sign bit: 0 for positive, 1 for negative
-    
-    //if ((ds18b20_array[1] & 0x80) == 0x80) {
-        ds18b20_temperature = (((ds18b20_array[1] << 8) | ds18b20_array[0]));
-        ds18b20_temperature /= 16;
-        sprintf(ds18b20_temp_str,"%.4f",ds18b20_temperature);/*} // add sign bit
-    else{
-        ds18b20_temperature = ((ds18b20_array[1] << 8) | ds18b20_array[0]);
-        ds18b20_temperature /= 16;
-        sprintf(ds18b20_temp_str,"%.4f",ds18b20_temperature);
-    }*/
-        
+    temperature = (((scratchPad[1] << 8) | scratchPad[0]));
+    temperature /= 16;
+    sprintf(ds18b20_temp_str,"%.4f",temperature); // add sign bit        
      
     return ds18b20_temp_str;
 }

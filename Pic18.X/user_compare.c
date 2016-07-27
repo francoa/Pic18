@@ -1,6 +1,8 @@
 #include "user_compare.h"
 
 void compare_setup(int us, int ms){
+    int compare_time;
+    float compare_value;
     compare_time = us + ms*1000;
     
     /*CCPxM3:CCPxM0: CCPx Module Mode Select bits*/

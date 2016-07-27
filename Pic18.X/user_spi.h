@@ -30,7 +30,5 @@ void spi_init_slave();
 void spi_demo_noInterrupts();
 void spi_demo_noInterrupts_slave();
 
-char spi_char;
-
 #endif	/* USER_SPI_H */
 

@@ -26,6 +26,7 @@ void led_toggle(int led){
 }*/
 
 void led_demo(){
+    int led_counter;
     fLED_1_Init();
     while(1)  {
         fLED_1_Toggle();
