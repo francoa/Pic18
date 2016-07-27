@@ -27,12 +27,6 @@
 bool dev_present;
 bool exit;
 bool busy;
-int j;
-BYTE romVal[9];
-char command;
-BYTE familyCode;
-BYTE serialNumber[6];
-BYTE crc;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -166,6 +160,7 @@ void init_sequence(void){
 }
 
 void main (void){
+    BYTE romVal[9];
     ConfigureInterruptPriority(true);
     ConfigureInterrupt();
     usart_init(9600,false,false);
@@ -218,6 +213,10 @@ void init_sequence(void){
 }
 
 void command_parse(char cmd){
+    int j;
+    BYTE familyCode;
+    BYTE serialNumber[6];
+    BYTE crc;
     
     // '1' -> READ_ROM
     // '5' -> CONVERT_T
@@ -225,6 +224,7 @@ void command_parse(char cmd){
     
     switch(cmd){
         case '1':
+            
             while(!TRMT);
             putsUSART((char *)"\n\rReadRom:");
             
@@ -384,6 +384,7 @@ void low_isr(void)
 {
     if (PIR1bits.RCIF == 1){
         PIR1bits.RCIF = 0;
+        char command;
         command=ReadUSART();
         if (busy){
             while(!TRMT);
