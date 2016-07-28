@@ -24,8 +24,6 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 
-bool dev_present;
-bool exit;
 bool busy;
 
 /******************************************************************************/
@@ -48,7 +46,6 @@ bool busy;
     #include "system.h"
     #include "user_usart.h"
     #include "user_led.h"
-    #include "user_compare.h"
     #include "user_ds18b20.h"
 #else
     #include "system.h"        /* System funct/params, like osc/peripheral config */
@@ -190,28 +187,6 @@ void main (void){
 
 #elif defined (DEV_DS18B20_DEBUG)
 
-void init_sequence(void){
-    /*INITIALIZATION SEQUENCE*/
-    dev_present = false;
-    exit = false;
-    fLED_1_Init();  //RED LED
-    
-    ds18b20_initialization();
-    ds18b20_presence();
-    
-    while(BUS_STATE() == 1 && !exit){__delay_us(3);}
-    if (exit){
-        fLED_1_On();
-        while(1){}
-    }
-    else{
-        compare_stop();
-        dev_present = true;
-        __delay_us(TPRESENCE);
-    }
-    /*INITIALIZATION SEQUENCE*/ 
-}
-
 void command_parse(char cmd){
     int j;
     BYTE familyCode;
@@ -219,8 +194,11 @@ void command_parse(char cmd){
     BYTE crc;
     
     // '1' -> READ_ROM
+    // '2' -> ALARM_SEARCH
+    // '3' -> SEARCH_UPTO_10_ROM
     // '5' -> CONVERT_T
     // '7' -> READ_SCRATCH
+    // '8' -> WRITE_SCRACTH
     
     switch(cmd){
         case '1':
@@ -228,8 +206,12 @@ void command_parse(char cmd){
             while(!TRMT);
             putsUSART((char *)"\n\rReadRom:");
             
-            init_sequence();
-            ds18b20_command(READ_ROM);
+            if (ds18b20_initialization() != 0){
+                while(!TRMT);
+                putsUSART((char *)"\n\rNo Device.");
+                break;
+            }
+            ds18b20_write_byte(READ_ROM);
             
             familyCode = ds18b20_read_byte();
             for (j=0; j<6; j++)
@@ -252,13 +234,35 @@ void command_parse(char cmd){
             while(!TRMT);
             putsUSART((char *)"\n\rReady");
             break;
+        case '2':
+            
+            break;
+        case '3':
+            while(!TRMT);
+            putsUSART((char *)"\n\rSearchRom: ");
+            
+            j = ds18b20_search_roms();
+            while(!TRMT);
+            WriteUSART('0'+j);
+            int i,z;
+            for (i=0; i<j; i++){
+                while(!TRMT);
+                putsUSART((char *)"\n\rRom:");
+                for (z=7; z>=0; z--)
+                    BinToHexUSART(ds18b20_devices[i]>>(8*z) & 0xFF);
+            }
+            break;
         case '5':
             while(!TRMT);
             putsUSART((char *)"\n\rConvertT:");
             
-            init_sequence();
-            ds18b20_command(SKIP_ROM);
-            ds18b20_command(CONVERT_T);
+            if (ds18b20_initialization() != 0){
+                while(!TRMT);
+                putsUSART((char *)"\n\rNo Device.");
+                break;
+            }
+            ds18b20_write_byte(SKIP_ROM);
+            ds18b20_write_byte(CONVERT_T);
             while(!ds18b20_read_bit());
             __delay_ms(1);
             
@@ -269,17 +273,38 @@ void command_parse(char cmd){
             while(!TRMT);
             putsUSART((char *)"\n\rReadScratch:");
             
-            init_sequence();
-            ds18b20_command(SKIP_ROM);
-            ds18b20_command(READ_SCRATCH);
+            if (ds18b20_initialization() != 0){
+                while(!TRMT);
+                putsUSART((char *)"\n\rNo Device.");
+                break;
+            }
+            ds18b20_write_byte(SKIP_ROM);
+            ds18b20_write_byte(READ_SCRATCH);
             while(!TRMT);
             putsUSART(ds18b20_read_T());
             
             while(!TRMT);
             putsUSART((char *)"\n\rReady");
             break;
+        case '8':
+            while(!TRMT);
+            putsUSART((char *)"\n\rWriteScratch:");
+            
+            if (ds18b20_initialization() != 0){
+                while(!TRMT);
+                putsUSART((char *)"\n\rNo Device.");
+                break;
+            }
+            ds18b20_write_byte(SKIP_ROM);
+            ds18b20_write_byte(WRITE_SCRATCH);
+            
+            ds18b20_write_scratch(30,-10,RES_12BIT);
+            
+            while(!TRMT);
+            putsUSART((char *)"\n\rReady");
+            break;
         default:
-            WriteByteUSART('-');
+            putsUSART((char *)"\n\rUnrecognized command");
             break;
     }
 }
@@ -384,26 +409,17 @@ void low_isr(void)
 {
     if (PIR1bits.RCIF == 1){
         PIR1bits.RCIF = 0;
-        char command;
-        command=ReadUSART();
-        if (busy){
+        if (busy)
+        {
             while(!TRMT);
-            putsUSART((char *)"Busy\n\r");
+            putsUSART((char *)"\n\rBusy.");
+            ReadUSART();
         }
         else{
             busy = true;
-            command_parse(command);
+            command_parse(ReadUSART());
             busy = false;
         }
-    }
-    else if (PIR1bits.CCP1IF == 1)
-    {
-        compare_stop();
-        if (!dev_present)
-            exit = true;
-        TMR1H = 0x00;
-        TMR1L = 0x00;
-        PIR1bits.CCP1IF = 0;
     }
 }
 
