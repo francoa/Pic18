@@ -26,11 +26,14 @@
 #endif
 
 //#include "linkedList.h"   //DYNAMIC MEMORY ALLOCATION NOT ADVICED ON PIC
+#include "user_usart.h"
 
 #ifndef _XTAL_FREQ
     #define _XTAL_FREQ      16000000L
 #endif
 
+#define TOT     //JUST FOR VISUALIZATION
+#ifdef TOT
 
 /****   BUS PARAMETERS  ****/
 #define BUS_LOW()       LATBbits.LATB0 = 0
@@ -95,8 +98,10 @@
 
 /****   POSSIBLE ROMS   ****/
 #define ROM_NUM     10
-#define LIST_NUM    10
+#define LIST_NUM    5
 /****   POSSIBLE ROMS   ****/
+
+#endif
 
 // BASIC COMMANDS
 void ds18b20_write_bit(unsigned char write_bit);
@@ -104,16 +109,37 @@ void ds18b20_write_byte(BYTE cmd);
 unsigned char ds18b20_read_bit(void);
 BYTE ds18b20_read_byte(void);
 
-// COMPLEX COMMANDS
+// COMPLEX COMMANDS     UINT64 DATA TYPE NOT USED IN THIS PIC
 unsigned char ds18b20_initialization(void);
-char * ds18b20_read_T(void);
-void ds18b20_write_scratch(int, int, UINT8);
-int ds18b20_search_roms(void);
+unsigned char ds18b20_read_rom(UINT32 *, UINT32 *);
+unsigned char ds18b20_T_Conversion(void);
+void ds18b20_T_Conversion_SpecificROM(int);
+unsigned char ds18b20_get_scratch(UINT32 *, UINT32 *, BYTE *);
+void ds18b20_get_scratch_SpecificROM(UINT32 *, UINT32 *, BYTE *, int);
+unsigned char ds18b20_read_T(float*);
+void ds18b20_read_T_SpecificROM(float*,int);
+unsigned char ds18b20_write_scratch(int, int, UINT8);
+void ds18b20_write_scratch_SpecificROM(int, int, UINT8,int);
+void ds18b20_write_values(int, int, UINT8);
+unsigned char ds18b20_recall_e2(void);
+void ds18b20_recall_e2_SpecificROM(int);
+unsigned char ds18b20_copy_e2(void);
+void ds18b20_copy_e2_SpecificROM(int);
+int ds18b20_search_devices(BYTE cmd);
+unsigned char ds18b20_rom_crc(UINT32,UINT32);
+unsigned char ds18b20_scratchpad_crc(UINT32,UINT32);
+
+//CRC shift register
+void ds18b20_crc_shiftReg_init(void);
+void ds18b20_crc_shiftReg_add(unsigned char);
 
 // VARIABLES
-char ds18b20_temp_str[10];
 int ds18b20_num_devices = 0;
+int ds18b20_num_alarms = 0;
 //struct ds18b20_device * ds18b20_devices;
-UINT64 ds18b20_devices[ROM_NUM];
+UINT32 ds18b20_devices[2*ROM_NUM];
+UINT32 ds18b20_alarms[2*ROM_NUM];
+
+unsigned char shiftRegister[8];
 
 #endif	/* USER_DS18B20_H */

@@ -83,8 +83,6 @@ void WriteByteUSART(BYTE val){
 
 void BinToHexUSART(BYTE val){
     BYTE usart_slider;
-    while(!TRMT);
-    putsUSART((char*)"\n\r0x");
     usart_slider = val >> 4;
     while(!TRMT);
     WriteUSART(hexChars[usart_slider]);
