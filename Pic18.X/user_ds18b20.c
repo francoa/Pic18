@@ -1,21 +1,20 @@
 #include "user_ds18b20.h"
 
+// One Wire Library Timings
 void ds18b20_write_bit(unsigned char write_bit){
     if (write_bit){
         BUS_TAKE();                         // Take Bus
         BUS_LOW();                          // Drive Bus low
-        __delay_us(TWSAMPLE);                 // Delay 5us
-        BUS_HIGH();
-        __delay_us(TWSLOT-TWSAMPLE);
+        __delay_us(TWSAMPLE);               // Delay 6 us
         BUS_RELEASE();                      // Release Bus
-        __delay_us(TWRECOV); // Delay 75us       
+        __delay_us(TWSLOT+TWRECOV-TWSAMPLE);// Delay 54 us
     }
     else{
         BUS_TAKE();                         // Take Bus
         BUS_LOW();                          // Drive Bus low
-        __delay_us(TWSLOT);                 // Delay 80us
+        __delay_us(TWSLOT);                 // Delay 60 us
         BUS_RELEASE();                      // Release Bus
-        __delay_us(TWRECOV); // Delay 5us
+        __delay_us(TWRECOV);                // Delay 10 us
     }
 }
 
@@ -27,15 +26,16 @@ void ds18b20_write_byte(BYTE cmd){
     }
 }
 
+// One Wire Library Timings
 unsigned char ds18b20_read_bit(){
     unsigned char ds18b20_bit;
     BUS_TAKE();                     // Take Bus
     BUS_LOW();                      // Drive Bus low
-    __delay_us(TRLOW);              // Delay 6us
+    __delay_us(TRLOW);              // Delay 6 us
     BUS_RELEASE();                  // Release Bus
-    __delay_us(TRSAMPLE);           // Delay 8us
-    ds18b20_bit = BUS_STATE();   // Sample
-    __delay_us(TRSLOT+TRRECOV-TRSAMPLE-TRLOW);   // Delay 70us
+    __delay_us(TRSAMPLE);           // Delay 9 us
+    ds18b20_bit = BUS_STATE();      // Sample
+    __delay_us(TRSLOT+TRRECOV-TRSAMPLE-TRLOW);  // Delay 55 us
     return ds18b20_bit;
 }
 
@@ -48,15 +48,16 @@ BYTE ds18b20_read_byte(){
     return slider;
 }
 
+// One Wire Library Timings
 unsigned char ds18b20_initialization(void){
     unsigned char presence;
     BUS_TAKE();                     // Take Bus
     BUS_LOW();                      // Drive Bus low
-    __delay_us(TRESET);          // Delay 500us
+    __delay_us(TRESET);          
     BUS_RELEASE();                  // Release Bus
     __delay_us(TRESETSAMPLE);
     presence = BUS_STATE();
-    __delay_us(TPRESENCE+TRESETRESISTOR-TRESETSAMPLE);
+    __delay_us(TRESET-TRESETSAMPLE);
     return presence;
 }
 

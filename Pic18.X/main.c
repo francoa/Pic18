@@ -544,20 +544,20 @@ void copy_to_eeprom(){
 
 void command_parse(char cmd){
     
-    switch(cmd){                        //CHECKS    1 DEV       2 or more
-        case '1':   //READ ROM                      CORRECT     N/A
+    switch(cmd){                        //CHECKS    1 DEV       2 or more       PIC
+        case '1':   //READ ROM                      CORRECT     N/A             CORRECT
             read_rom();           
             break;
             
-        case '2':   //ALARM SEARCH
+        case '2':   //ALARM SEARCH                                              CORRECT
             alarm_search();
             break;
             
-        case '3':   //SEARCH ROM                    CORRECT     CORRECT
+        case '3':   //SEARCH ROM                    CORRECT     CORRECT         CORRECT
             device_search();
             break;
             
-        case '4':   //T CONVERSION                  CORRECT     CORRECT             
+        case '4':   //T CONVERSION                  CORRECT     CORRECT         CORRECT
             t_conversion();
             break;
             
@@ -565,11 +565,11 @@ void command_parse(char cmd){
             read_scratch();
             break;
             
-        case '6':   //READ TEMPERATURE              CORRECT     CORRECT
+        case '6':   //READ TEMPERATURE              CORRECT     CORRECT         CORRECT
             read_T();   
             break;
             
-        case '7':   //WRITE SCRATCHPAD              Th and Tl not setting
+        case '7':   //WRITE SCRATCHPAD              Th and Tl not setting       CORRECT
             write_scratch();
             break;
             

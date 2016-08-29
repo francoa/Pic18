@@ -46,27 +46,25 @@
 
 /****   TIMING PARAMETERS   ****/
 //Microcontroller reset pulse low: 480us minimum
-#define TRESET          500
-//Reset resistor pullup: 15us to 60us
-#define TRESETRESISTOR  30
-//DS18B20 presence pulse: 60us to 240us
-#define TPRESENCE       500
-//Sample presence pulse time
-#define TRESETSAMPLE    60
+#define TRESET          480 //500
+//Sample presence pulse time: 60us to 240us
+#define TRESETSAMPLE    70
+
 //Write time slot: 60us to 120us
-#define TWSLOT          100
+#define TWSLOT          60 //100
 //Write recovery time: 1us minimum
-#define TWRECOV         2
+#define TWRECOV         10 //2
 //Write sample time: 15us maximum
-#define TWSAMPLE        10
+#define TWSAMPLE        6 //1
+
 //Read time slot: 60us to 120us
-#define TRSLOT          100
+#define TRSLOT          60 //100
 //Read recovery time: 1us minimum
-#define TRRECOV         1
+#define TRRECOV         10 //1
 //Read sample time: 15us - TRLOW maximum
-#define TRSAMPLE        9
+#define TRSAMPLE        9 //14
 //Read low time: 1us
-#define TRLOW           1
+#define TRLOW           6 //1
 /****   TIMING PARAMETERS   ****/
 
 /****   COMMANDS   ****/
