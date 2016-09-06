@@ -99,6 +99,16 @@
 #define LIST_NUM    5
 /****   POSSIBLE ROMS   ****/
 
+/****    ERROR CODES    ****/
+#define OK              0
+#define ERR_NODEV       1
+#define ERR_MOREDEV     2
+#define ERR_INITFAIL    3
+#define ERR_CRCFAIL     4
+#define ERR_UNKCMD      5
+#define ERR_UNK         6
+/****    ERROR CODES    ****/
+
 #endif
 
 // BASIC COMMANDS
@@ -111,19 +121,19 @@ BYTE ds18b20_read_byte(void);
 unsigned char ds18b20_initialization(void);
 unsigned char ds18b20_read_rom(UINT32 *, UINT32 *);
 unsigned char ds18b20_T_Conversion(void);
-void ds18b20_T_Conversion_SpecificROM(int);
-unsigned char ds18b20_get_scratch(UINT32 *, UINT32 *, BYTE *);
-void ds18b20_get_scratch_SpecificROM(UINT32 *, UINT32 *, BYTE *, int);
+unsigned char ds18b20_T_Conversion_SpecificROM(int);
+unsigned char ds18b20_get_scratch(UINT32 *, UINT32 *);
+unsigned char ds18b20_get_scratch_SpecificROM(UINT32 *, UINT32 *, int);
 unsigned char ds18b20_read_T(float*);
-void ds18b20_read_T_SpecificROM(float*,int);
+unsigned char ds18b20_read_T_SpecificROM(float*,int);
 unsigned char ds18b20_write_scratch(int, int, UINT8);
-void ds18b20_write_scratch_SpecificROM(int, int, UINT8,int);
+unsigned char ds18b20_write_scratch_SpecificROM(int, int, UINT8,int);
 void ds18b20_write_values(int, int, UINT8);
 unsigned char ds18b20_recall_e2(void);
-void ds18b20_recall_e2_SpecificROM(int);
+unsigned char ds18b20_recall_e2_SpecificROM(int);
 unsigned char ds18b20_copy_e2(void);
-void ds18b20_copy_e2_SpecificROM(int);
-int ds18b20_search_devices(BYTE cmd);
+unsigned char ds18b20_copy_e2_SpecificROM(int);
+unsigned char ds18b20_search_devices(BYTE cmd);
 unsigned char ds18b20_rom_crc(UINT32,UINT32);
 unsigned char ds18b20_scratchpad_crc(UINT32,UINT32);
 
@@ -132,8 +142,8 @@ void ds18b20_crc_shiftReg_init(void);
 void ds18b20_crc_shiftReg_add(unsigned char);
 
 // VARIABLES
-int ds18b20_num_devices = 0;
-int ds18b20_num_alarms = 0;
+unsigned char ds18b20_num_devices = 0;
+unsigned char ds18b20_num_alarms = 0;
 //struct ds18b20_device * ds18b20_devices;
 UINT32 ds18b20_devices[2*ROM_NUM];
 UINT32 ds18b20_alarms[2*ROM_NUM];

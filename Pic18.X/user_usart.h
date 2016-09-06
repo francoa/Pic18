@@ -27,6 +27,11 @@
 
 #endif
 
+/****    MACRO    ****/
+#define M_WRITEUSART(x)   while(!TRMT);putsUSART(x)
+#define M_WRITEUSART2(x)   while(!TRMT);WriteUSART(x)
+/****    MACRO    ****/
+
 void usart_init(int,bool,bool);
 void usart_demo_noInterrupts();
 void WriteBinUSART(BYTE);

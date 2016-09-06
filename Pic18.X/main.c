@@ -188,16 +188,14 @@ void main (void){
 #elif defined (DEV_DS18B20_DEBUG)
 
 void printCommands(){
-    while(!TRMT);
-    putsUSART((char *)"\n\rAvailable Commands:\n\r\t1-> Read ROM\n\r\t2-> Alarm Search\n\r\t3-> Search (10) devices"
+    M_WRITEUSART((char *)"\n\rAvailable Commands:\n\r\t1-> Read ROM\n\r\t2-> Alarm Search\n\r\t3-> Search (10) devices"
             "\n\r\t4-> Start T Conversion\n\r\t5-> Read ScratchPad\n\r\t6-> Read Last T\n\r\t7-> Set Alarms"
             "\n\r8-> Recall EEPROM\n\r9-> Copy to EEPROM\n\rCOMMAND: ");  
 }
 
 void printROM(UINT device){
     int z;
-    while(!TRMT);
-    putsUSART((char *)"0x");
+    M_WRITEUSART((char *)"0x");
     for (z=3; z>=0; z--){
         BinToHexUSART((ds18b20_devices[2*device] >> (8*z)) & 0xFF);
     }
@@ -206,22 +204,28 @@ void printROM(UINT device){
     }
 }
 
+void printAlarm(UINT device){
+    int z;
+    M_WRITEUSART((char *)"0x");
+    for (z=3; z>=0; z--){
+        BinToHexUSART((ds18b20_alarms[2*device] >> (8*z)) & 0xFF);
+    }
+    for (z=3; z>=0; z--){
+        BinToHexUSART((ds18b20_alarms[2*device+1] >> (8*z)) & 0xFF);
+    } 
+}
+
 int device_selection(){
     int i;
     char c;
-    while(!TRMT);
-    putsUSART((char *)"\n\rSelect device:");
+    M_WRITEUSART((char *)"\n\rSelect device:");
     for (i=0; i<ds18b20_num_devices; i++){
-        while(!TRMT);
-        putsUSART((char *)"\n\r");
-        while(!TRMT);
-        WriteUSART(i+'0');
-        while(!TRMT);
-        WriteUSART('-');
+        M_WRITEUSART((char *)"\n\r");
+        M_WRITEUSART2(i+'0');
+        M_WRITEUSART2('-');
         printROM(i);
     }
-    while(!TRMT);
-    putsUSART((char *)"\n\rDevice: ");
+    M_WRITEUSART((char *)"\n\rDevice: ");
     while(1){
         if (PIR1bits.RCIF){
             c= ReadUSART();
@@ -237,141 +241,126 @@ void read_rom(){
     unsigned char result;
     UINT32 highBits,lowBits;
             
-    while(!TRMT);
-    putsUSART((char *)"\n\rRead Rom:");
+    M_WRITEUSART((char *)"\n\rRead Rom:");
 
     result = ds18b20_read_rom(&highBits,&lowBits);
-    if (result == 0)
-    {
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
-    }
-    else if (result == 1)
-    {
-        while(!TRMT);
-        putsUSART((char *)"\n\rMultiple devices. Cannot READ ROM");
-    }
-    else{
-        while(!TRMT);
-        putsUSART((char *)"\n\rFamily Code:");
-        BinToHexUSART((lowBits) & 0xFF);
+    switch (result){
+        case ERR_NODEV:
+            M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+            break;
+        case ERR_MOREDEV:
+            M_WRITEUSART((char *)"\n\rMultiple devices. Cannot READ ROM");
+            break;
+        case ERR_CRCFAIL:
+            M_WRITEUSART((char *)"\n\rCRC Fail");
+            break;
+        case ERR_INITFAIL:
+            M_WRITEUSART((char *)"\n\rInit Fail");
+            break;
+        default:
+            M_WRITEUSART((char *)"\n\rFamily Code:");
+            BinToHexUSART((lowBits) & 0xFF);
 
-        while(!TRMT);
-        putsUSART((char *)"\n\rRom:");
-        int j;
-        for (j=2; j>=0; j--)
-            BinToHexUSART((highBits >> 8*j) & 0xFF);
-        for (j=3; j>=1; j--)
-            BinToHexUSART((lowBits >> 8*j) & 0xFF);
+            M_WRITEUSART((char *)"\n\rRom:");
+            int j;
+            for (j=2; j>=0; j--)
+                BinToHexUSART((highBits >> 8*j) & 0xFF);
+            for (j=3; j>=1; j--)
+                BinToHexUSART((lowBits >> 8*j) & 0xFF);
 
-        while(!TRMT);
-        putsUSART((char *)"\n\rCrc:");
-        BinToHexUSART((highBits >> 24) & 0xFF);
-        
-        unsigned char crc = ds18b20_rom_crc(highBits,lowBits);
-        while(!TRMT);
-        putsUSART((char *)"\n\rCalculated Crc:");
-        BinToHexUSART(crc);
+            M_WRITEUSART((char *)"\n\rCrc:");
+            BinToHexUSART((highBits >> 24) & 0xFF);
+
+            break;
     }
 }
 
 void alarm_search(){
-    int devices;
+    unsigned char result;
             
-    while(!TRMT);
-    putsUSART((char *)"\n\rSearch:");
+    M_WRITEUSART((char *)"\n\rSearch:");
 
-    devices = ds18b20_search_devices(ALARM_SEARCH);
-    while(!TRMT);
-    WriteUSART('0'+devices);
-    int i,z;
-    for (i=0; i<devices; i++){
-        while(!TRMT);
-        putsUSART((char *)"\n\rRom: ");
-        printROM(i);
+    result = ds18b20_search_devices(ALARM_SEARCH);
+    if (result == OK){
+        M_WRITEUSART2('0'+ds18b20_num_alarms);
+        int i;
+        for (i=0; i<ds18b20_num_alarms; i++){
+            M_WRITEUSART((char *)"\n\rRom: ");
+            printAlarm(i);
+        }    
+    }
+    else{
+        M_WRITEUSART((char *)"\n\rFail ");
+        M_WRITEUSART2(result+'0');
     }
 }
 
 void device_search(){
-    int roms;
-    unsigned char crc;
+    unsigned char result;
             
-    while(!TRMT);
-    putsUSART((char *)"\n\rSearch Rom: ");
+    M_WRITEUSART((char *)"\n\rSearch Rom: ");
 
-    roms = ds18b20_search_devices(SEARCH_ROM);
-    while(!TRMT);
-    WriteUSART('0'+roms);
-    int i,z;
-    for (i=0; i<roms; i++){
-        while(!TRMT);
-        putsUSART((char *)"\n\rRom: ");
-        printROM(i);
-        while(!TRMT);
-        putsUSART((char *)"  Calculated Crc: ");
-        crc = ds18b20_rom_crc(ds18b20_devices[2*i],ds18b20_devices[2*i+1]);
-        BinToHexUSART(crc);
+    result = ds18b20_search_devices(SEARCH_ROM);
+    if (result == OK){
+        M_WRITEUSART2('0'+ds18b20_num_devices);
+        int i;
+        for (i=0; i<ds18b20_num_devices; i++){
+            M_WRITEUSART((char *)"\n\rRom: ");
+            printROM(i);
+        }
+    }
+    else{
+        M_WRITEUSART((char *)"\n\rFail ");
+        M_WRITEUSART2(result+'0');
     }
 }
 
 void t_conversion(){
-    while(!TRMT);
-    putsUSART((char *)"\n\rStart T Conversion:");
+    M_WRITEUSART((char *)"\n\rStart T Conversion:");
 
-    UINT8 result = ds18b20_T_Conversion();
+    unsigned char result = ds18b20_T_Conversion();
 
-    if (result==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (result==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
     }
-    else if (result==1){
+    else if (result==ERR_MOREDEV){
         int selection = device_selection();
         if (selection >= 0 && selection < ds18b20_num_devices)
-            ds18b20_T_Conversion_SpecificROM(selection);
-        else{
-            while(!TRMT);
-            putsUSART((char *)"\n\rCannot do that");
-        }   
+            result = ds18b20_T_Conversion_SpecificROM(selection);
+        else
+            M_WRITEUSART((char *)"\n\rCannot do that");
     }
+    
+    M_WRITEUSART((char *)"\n\rResult ");
+    M_WRITEUSART2(result+'0');
 }
 
 void read_scratch(){
     int counter;
     unsigned char result;
     UINT32 highBits,lowBits;
-    BYTE crc;
-    while(!TRMT);
-    putsUSART((char *)"\n\rRead ScratchPad:");
+    M_WRITEUSART((char *)"\n\rRead ScratchPad:");
     
-    result = ds18b20_get_scratch(&highBits,&lowBits,&crc);   
+    result = ds18b20_get_scratch(&highBits,&lowBits);   
     
-    if (result==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (result==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
-    else if (result==1){
+    else if (result==ERR_MOREDEV){
         int selection = device_selection();
         if (selection >= 0 && selection < ds18b20_num_devices)
-            ds18b20_get_scratch_SpecificROM(&highBits,&lowBits,&crc,selection);
+            result = ds18b20_get_scratch_SpecificROM(&highBits,&lowBits,selection);
         else{
-            while(!TRMT);
-            putsUSART((char *)"\n\rCannot do that");
+            M_WRITEUSART((char *)"\n\rCannot do that");
             return;
         }   
     }
-    while(!TRMT);
-    putsUSART((char *)"\n\rScracthPad: 0x");
+    M_WRITEUSART((char *)"\n\rScracthPad: 0x");
     for (counter=3; counter>=0; counter--)
        BinToHexUSART((highBits >> (counter*8)) & 0xFF);        
     for (counter=3; counter>=0; counter--)
        BinToHexUSART((lowBits >> (counter*8)) & 0xFF);   
-    while(!TRMT);
-    putsUSART((char *)"\n\rCrc: 0x");
-    BinToHexUSART(crc);
-    while(!TRMT);
-    putsUSART((char *)"  Calculated crc: 0x");
-    BinToHexUSART(ds18b20_scratchpad_crc(highBits,lowBits));
 }
 
 void read_T(){
@@ -379,30 +368,26 @@ void read_T(){
     float value;
     unsigned char result;
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rRead Temperature:");
+    M_WRITEUSART((char *)"\n\rRead Temperature: ");
     
     result = ds18b20_read_T(&value);   
     
-    if (result==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (result==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
-    else if (result==1){
+    else if (result==ERR_MOREDEV){
         int selection = device_selection();
         if (selection >= 0 && selection < ds18b20_num_devices)
-            ds18b20_read_T_SpecificROM(&value, selection);
+            result = ds18b20_read_T_SpecificROM(&value, selection);
         else{
-            while(!TRMT);
-            putsUSART((char *)"\n\rCannot do that");
+            M_WRITEUSART((char *)"\n\rCannot do that");
             return;
         }   
     }
     
-    sprintf(str,"\n\rTemperature: %.4f",value);
-    while(!TRMT);
-    putsUSART(str);
+    sprintf(str,"\n\r%.4f",value);
+    M_WRITEUSART(str);
 }
 
 int alarm_value(){
@@ -410,8 +395,7 @@ int alarm_value(){
     char c;
     bool negative = false;
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rAlarm: 1-Positive , 2-Negative ");
+    M_WRITEUSART((char *)"\n\rAlarm: 1-Positive , 2-Negative ");
     while(1){
         if (PIR1bits.RCIF){
             c= ReadUSART();
@@ -423,8 +407,7 @@ int alarm_value(){
     if (c=='2')
         negative = true;
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rInput alarm value (press r when finished): ");
+    M_WRITEUSART((char *)"\n\rInput alarm value (press r when finished): ");
     
     while(c != 'R' && c!= 'r'){
         if (PIR1bits.RCIF){
@@ -441,9 +424,8 @@ int alarm_value(){
 
 void write_scratch(){
 
-    if (ds18b20_num_devices==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (ds18b20_num_devices==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
     
@@ -451,18 +433,14 @@ void write_scratch(){
     int Tl = 0;
     char c = '0';
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rWrite ScratchPad:");
+    M_WRITEUSART((char *)"\n\rWrite ScratchPad:");
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rHigh Limit ALARM:");
+    M_WRITEUSART((char *)"\n\rHigh Limit ALARM:");
     Th = alarm_value();
-    while(!TRMT);
-    putsUSART((char *)"\n\rLow Limit ALARM:");
+    M_WRITEUSART((char *)"\n\rLow Limit ALARM:");
     Tl = alarm_value();
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rResolution: 0-9bits , 1-10bits , 2-11bits , 3-12bits , 3-defaults ");
+    M_WRITEUSART((char *)"\n\rResolution: 0-9bits , 1-10bits , 2-11bits , 3-12bits , 3-defaults ");
     while(1){
         if (PIR1bits.RCIF){
             c= ReadUSART();
@@ -474,18 +452,16 @@ void write_scratch(){
     
     unsigned char result = ds18b20_write_scratch(Th, Tl, c-'0');
     
-    if (result==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (result==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
-    else if (result==1){
+    else if (result==ERR_MOREDEV){
         int selection = device_selection();
         if (selection >= 0 && selection < ds18b20_num_devices)
-            ds18b20_write_scratch_SpecificROM(Th, Tl, c-'0',selection);
+            result = ds18b20_write_scratch_SpecificROM(Th, Tl, c-'0',selection);
         else{
-            while(!TRMT);
-            putsUSART((char *)"\n\rCannot do that");
+            M_WRITEUSART((char *)"\n\rCannot do that");
             return;
         }   
     }
@@ -495,23 +471,20 @@ void write_scratch(){
 void recall_from_eeprom(){
     unsigned char result;
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rRecall:");
+    M_WRITEUSART((char *)"\n\rRecall:");
     
     result = ds18b20_recall_e2();   
     
-    if (result==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (result==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
-    else if (result==1){
+    else if (result==ERR_MOREDEV){
         int selection = device_selection();
         if (selection >= 0 && selection < ds18b20_num_devices)
-            ds18b20_recall_e2_SpecificROM(selection);
+            result = ds18b20_recall_e2_SpecificROM(selection);
         else{
-            while(!TRMT);
-            putsUSART((char *)"\n\rCannot do that");
+            M_WRITEUSART((char *)"\n\rCannot do that");
             return;
         }   
     }
@@ -520,23 +493,20 @@ void recall_from_eeprom(){
 void copy_to_eeprom(){
     unsigned char result;
     
-    while(!TRMT);
-    putsUSART((char *)"\n\rCopy:");
+    M_WRITEUSART((char *)"\n\rCopy:");
     
     result = ds18b20_copy_e2();   
     
-    if (result==0){
-        while(!TRMT);
-        putsUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
+    if (result==ERR_NODEV){
+        M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
-    else if (result==1){
+    else if (result==ERR_MOREDEV){
         int selection = device_selection();
         if (selection >= 0 && selection < ds18b20_num_devices)
-            ds18b20_copy_e2_SpecificROM(selection);
+            result = ds18b20_copy_e2_SpecificROM(selection);
         else{
-            while(!TRMT);
-            putsUSART((char *)"\n\rCannot do that");
+            M_WRITEUSART((char *)"\n\rCannot do that");
             return;
         }   
     }
@@ -585,7 +555,8 @@ void command_parse(char cmd){
             putsUSART((char *)"\n\rUnrecognized command");
             break;
     }
-    printCommands();
+    //printCommands();
+    M_WRITEUSART((char *)"\n\r");
 }
 
 void main (void){
