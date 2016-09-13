@@ -142,12 +142,12 @@ void ds18b20_crc_shiftReg_init(void);
 void ds18b20_crc_shiftReg_add(unsigned char);
 
 // VARIABLES
-unsigned char ds18b20_num_devices = 0;
-unsigned char ds18b20_num_alarms = 0;
-//struct ds18b20_device * ds18b20_devices;
-UINT32 ds18b20_devices[2*ROM_NUM];
-UINT32 ds18b20_alarms[2*ROM_NUM];
+unsigned char _ds18b20_num_devices = 0;
+unsigned char _ds18b20_num_alarms = 0;
+//struct _ds18b20_device * ds18b20_devices;
+UINT32 _ds18b20_devices[2*ROM_NUM];
+UINT32 _ds18b20_alarms[2*ROM_NUM];
 
-unsigned char shiftRegister[8];
+unsigned char _shiftRegister[8];
 
 #endif	/* USER_DS18B20_H */

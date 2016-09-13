@@ -39,10 +39,11 @@ bool busy;
 //#define SPI_MASTER_DEMO
 //#define SPI_SLAVE_DEMO
 //#define COMPARE_INT_DEMO
-//#define DEV_1WIRE_DEMO
-#define DEV_DS18B20_DEBUG
+//#define ONEWIRE_DEMO
+//#define DS18B20_DEMO
+#define DISPLAY_DEMO
 
-#ifdef DEV_DS18B20_DEBUG
+#ifdef DS18B20_DEMO
     #include "system.h"
     #include "user_usart.h"
     #include "user_led.h"
@@ -55,6 +56,7 @@ bool busy;
     #include "user_extInt.h"
     #include "user_compare.h"
     #include "user_ds18b20.h"
+    #include "user_lcd.h"
 #endif
 
 #ifdef USART_DEMO
@@ -134,7 +136,7 @@ void main(void){
 }
 
 
-#elif defined (DEV_1WIRE_DEMO)
+#elif defined (ONEWIRE_DEMO)
 void init_sequence(void){
     /*INITIALIZATION SEQUENCE*/
     dev_present = false;
@@ -185,7 +187,7 @@ void main (void){
     while(1){}
 }
 
-#elif defined (DEV_DS18B20_DEBUG)
+#elif defined (DS18B20_DEMO)
 
 void printCommands(){
     M_WRITEUSART((char *)"\n\rAvailable Commands:\n\r\t1-> Read ROM\n\r\t2-> Alarm Search\n\r\t3-> Search (10) devices"
@@ -197,10 +199,10 @@ void printROM(UINT device){
     int z;
     M_WRITEUSART((char *)"0x");
     for (z=3; z>=0; z--){
-        BinToHexUSART((ds18b20_devices[2*device] >> (8*z)) & 0xFF);
+        BinToHexUSART((_ds18b20_devices[2*device] >> (8*z)) & 0xFF);
     }
     for (z=3; z>=0; z--){
-        BinToHexUSART((ds18b20_devices[2*device+1] >> (8*z)) & 0xFF);
+        BinToHexUSART((_ds18b20_devices[2*device+1] >> (8*z)) & 0xFF);
     }
 }
 
@@ -208,10 +210,10 @@ void printAlarm(UINT device){
     int z;
     M_WRITEUSART((char *)"0x");
     for (z=3; z>=0; z--){
-        BinToHexUSART((ds18b20_alarms[2*device] >> (8*z)) & 0xFF);
+        BinToHexUSART((_ds18b20_alarms[2*device] >> (8*z)) & 0xFF);
     }
     for (z=3; z>=0; z--){
-        BinToHexUSART((ds18b20_alarms[2*device+1] >> (8*z)) & 0xFF);
+        BinToHexUSART((_ds18b20_alarms[2*device+1] >> (8*z)) & 0xFF);
     } 
 }
 
@@ -219,7 +221,7 @@ int device_selection(){
     int i;
     char c;
     M_WRITEUSART((char *)"\n\rSelect device:");
-    for (i=0; i<ds18b20_num_devices; i++){
+    for (i=0; i<_ds18b20_num_devices; i++){
         M_WRITEUSART((char *)"\n\r");
         M_WRITEUSART2(i+'0');
         M_WRITEUSART2('-');
@@ -282,9 +284,9 @@ void alarm_search(){
 
     result = ds18b20_search_devices(ALARM_SEARCH);
     if (result == OK){
-        M_WRITEUSART2('0'+ds18b20_num_alarms);
+        M_WRITEUSART2('0'+_ds18b20_num_alarms);
         int i;
-        for (i=0; i<ds18b20_num_alarms; i++){
+        for (i=0; i<_ds18b20_num_alarms; i++){
             M_WRITEUSART((char *)"\n\rRom: ");
             printAlarm(i);
         }    
@@ -302,9 +304,9 @@ void device_search(){
 
     result = ds18b20_search_devices(SEARCH_ROM);
     if (result == OK){
-        M_WRITEUSART2('0'+ds18b20_num_devices);
+        M_WRITEUSART2('0'+_ds18b20_num_devices);
         int i;
-        for (i=0; i<ds18b20_num_devices; i++){
+        for (i=0; i<_ds18b20_num_devices; i++){
             M_WRITEUSART((char *)"\n\rRom: ");
             printROM(i);
         }
@@ -325,7 +327,7 @@ void t_conversion(){
     }
     else if (result==ERR_MOREDEV){
         int selection = device_selection();
-        if (selection >= 0 && selection < ds18b20_num_devices)
+        if (selection >= 0 && selection < _ds18b20_num_devices)
             result = ds18b20_T_Conversion_SpecificROM(selection);
         else
             M_WRITEUSART((char *)"\n\rCannot do that");
@@ -349,7 +351,7 @@ void read_scratch(){
     }
     else if (result==ERR_MOREDEV){
         int selection = device_selection();
-        if (selection >= 0 && selection < ds18b20_num_devices)
+        if (selection >= 0 && selection < _ds18b20_num_devices)
             result = ds18b20_get_scratch_SpecificROM(&highBits,&lowBits,selection);
         else{
             M_WRITEUSART((char *)"\n\rCannot do that");
@@ -378,7 +380,7 @@ void read_T(){
     }
     else if (result==ERR_MOREDEV){
         int selection = device_selection();
-        if (selection >= 0 && selection < ds18b20_num_devices)
+        if (selection >= 0 && selection < _ds18b20_num_devices)
             result = ds18b20_read_T_SpecificROM(&value, selection);
         else{
             M_WRITEUSART((char *)"\n\rCannot do that");
@@ -424,7 +426,7 @@ int alarm_value(){
 
 void write_scratch(){
 
-    if (ds18b20_num_devices==ERR_NODEV){
+    if (_ds18b20_num_devices==ERR_NODEV){
         M_WRITEUSART((char *)"\n\rNo devices. Perform SEARCH ROM");
         return;
     }
@@ -458,7 +460,7 @@ void write_scratch(){
     }
     else if (result==ERR_MOREDEV){
         int selection = device_selection();
-        if (selection >= 0 && selection < ds18b20_num_devices)
+        if (selection >= 0 && selection < _ds18b20_num_devices)
             result = ds18b20_write_scratch_SpecificROM(Th, Tl, c-'0',selection);
         else{
             M_WRITEUSART((char *)"\n\rCannot do that");
@@ -481,7 +483,7 @@ void recall_from_eeprom(){
     }
     else if (result==ERR_MOREDEV){
         int selection = device_selection();
-        if (selection >= 0 && selection < ds18b20_num_devices)
+        if (selection >= 0 && selection < _ds18b20_num_devices)
             result = ds18b20_recall_e2_SpecificROM(selection);
         else{
             M_WRITEUSART((char *)"\n\rCannot do that");
@@ -503,7 +505,7 @@ void copy_to_eeprom(){
     }
     else if (result==ERR_MOREDEV){
         int selection = device_selection();
-        if (selection >= 0 && selection < ds18b20_num_devices)
+        if (selection >= 0 && selection < _ds18b20_num_devices)
             result = ds18b20_copy_e2_SpecificROM(selection);
         else{
             M_WRITEUSART((char *)"\n\rCannot do that");
@@ -575,6 +577,17 @@ void main (void){
     }
 }
 
+#elif defined(DISPLAY_DEMO)
+
+void main(void)
+{
+    lcd_init(false);
+    lcd_begin(16, 2, LCD_5x8DOTS);
+    lcd_setCursor(0,1);
+    lcd_print((char *)"LIGHT:",6);
+    while(1){}
+}
+
 #else
 void main(void)
 {
@@ -589,7 +602,7 @@ void main(void)
 
 /* High-priority service */
 
-#if defined(USART_INT_DEMO) || defined(EXT_INT_DEMO) || defined(COMPARE_INT_DEMO) || defined(DEV_1WIRE_DEMO)
+#if defined(USART_INT_DEMO) || defined(EXT_INT_DEMO) || defined(COMPARE_INT_DEMO) || defined(ONEWIRE_DEMO)
 
 #if defined(__XC) || defined(HI_TECH_C)
 void interrupt high_isr(void)
@@ -636,7 +649,7 @@ void low_isr(void)
 
 #endif
 
-#if defined(DEV_DS18B20_)
+#if defined(DS18B20_)
 
 #if defined(__XC) || defined(HI_TECH_C)
 void interrupt high_isr(void)

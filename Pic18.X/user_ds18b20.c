@@ -60,9 +60,9 @@ unsigned char ds18b20_initialization(void){
 
 unsigned char ds18b20_read_rom(UINT32 * highBits, UINT32 * lowBits){
     int j;
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     if (ds18b20_initialization() != 0 ){
         return ERR_INITFAIL;
@@ -92,9 +92,9 @@ unsigned char ds18b20_read_rom(UINT32 * highBits, UINT32 * lowBits){
 }
 
 unsigned char ds18b20_T_Conversion(void){
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     else{
         if (ds18b20_initialization() != 0 ){
@@ -115,9 +115,9 @@ unsigned char ds18b20_T_Conversion_SpecificROM(int device){
     
     int counter;
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
     
     ds18b20_write_byte(CONVERT_T);
     while(!ds18b20_read_bit());
@@ -126,9 +126,9 @@ unsigned char ds18b20_T_Conversion_SpecificROM(int device){
 }
 
 unsigned char ds18b20_get_scratch(UINT32 * highBits, UINT32 * lowBits){
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     else{
         int counter = 0;
@@ -163,9 +163,9 @@ unsigned char ds18b20_get_scratch_SpecificROM(UINT32 * highBits, UINT32 * lowBit
     
     int counter = 0;
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
     
     ds18b20_write_byte(READ_SCRATCH);
 
@@ -187,9 +187,9 @@ unsigned char ds18b20_get_scratch_SpecificROM(UINT32 * highBits, UINT32 * lowBit
 }
 
 unsigned char ds18b20_read_T(float* temperature){
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     else{
         BYTE scratchPad[9];
@@ -222,9 +222,9 @@ unsigned char ds18b20_read_T_SpecificROM(float* temperature, int device){
     ds18b20_write_byte(MATCH_ROM);
     
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
     
     ds18b20_write_byte(READ_SCRATCH);
 
@@ -238,9 +238,9 @@ unsigned char ds18b20_read_T_SpecificROM(float* temperature, int device){
          
 unsigned char ds18b20_write_scratch(int Thigh, int Tlow, UINT8 resolution){
     
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     else{
         if (ds18b20_initialization() != 0)
@@ -262,9 +262,9 @@ unsigned char ds18b20_write_scratch_SpecificROM(int Thigh, int Tlow, UINT8 resol
     ds18b20_write_byte(MATCH_ROM);
     int counter;
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
 
     ds18b20_write_byte(WRITE_SCRATCH);
 
@@ -309,9 +309,9 @@ void ds18b20_write_values(int Thigh, int Tlow, UINT8 resolution){
 }
 
 unsigned char ds18b20_recall_e2(void){
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     else{
         
@@ -334,9 +334,9 @@ unsigned char ds18b20_recall_e2_SpecificROM(int device){
     ds18b20_write_byte(MATCH_ROM);
     int counter;
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
     
     ds18b20_write_byte(RECALL_E2);
     while(!ds18b20_read_bit());
@@ -345,9 +345,9 @@ unsigned char ds18b20_recall_e2_SpecificROM(int device){
 }
 
 unsigned char ds18b20_copy_e2(void){
-    if (ds18b20_num_devices == 0)
+    if (_ds18b20_num_devices == 0)
         return ERR_NODEV;
-    else if (ds18b20_num_devices != 1)
+    else if (_ds18b20_num_devices != 1)
         return ERR_MOREDEV;
     else{
         if (ds18b20_initialization() != 0)
@@ -368,9 +368,9 @@ unsigned char ds18b20_copy_e2_SpecificROM(int device){
     
     ds18b20_write_byte(MATCH_ROM);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device+1] >> (counter*8)) & 0xFF);
     for (counter=0; counter<4; counter++)
-        ds18b20_write_byte((ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
+        ds18b20_write_byte((_ds18b20_devices[2*device] >> (counter*8)) & 0xFF);
 
     ds18b20_write_byte(COPY_SCRATCH);
 
@@ -393,19 +393,19 @@ unsigned char ds18b20_search_devices(BYTE cmd){
     
     if (cmd == SEARCH_ROM){
         for (counter=0; counter < 2*ROM_NUM; counter++)
-            ds18b20_devices[counter] = 0;
-        ds18b20_num_devices = 0;
+            _ds18b20_devices[counter] = 0;
+        _ds18b20_num_devices = 0;
     }
     else if (cmd == ALARM_SEARCH){
         for (counter=0; counter < 2*ROM_NUM; counter++)
-            ds18b20_alarms[counter] = 0;
-        ds18b20_num_alarms = 0;
+            _ds18b20_alarms[counter] = 0;
+        _ds18b20_num_alarms = 0;
     }
     else{
         return ERR_UNKCMD;
     }
     
-    while((first || num_elements > 0) && ds18b20_num_devices < ROM_NUM && ds18b20_num_alarms < ROM_NUM){
+    while((first || num_elements > 0) && _ds18b20_num_devices < ROM_NUM && _ds18b20_num_alarms < ROM_NUM){
         bool erase = false;
         bit_value = 1;
         if (ds18b20_initialization() != 0)
@@ -496,35 +496,35 @@ unsigned char ds18b20_search_devices(BYTE cmd){
         complement_bit = ds18b20_read_bit();
         if (current_bit != complement_bit){
             if (cmd == SEARCH_ROM){
-                ds18b20_devices[2*ds18b20_num_devices]=rom_value_High + bit_value*current_bit;
-                ds18b20_devices[2*ds18b20_num_devices+1]=rom_value_Low;
-                ds18b20_num_devices++;
+                _ds18b20_devices[2*_ds18b20_num_devices]=rom_value_High + bit_value*current_bit;
+                _ds18b20_devices[2*_ds18b20_num_devices+1]=rom_value_Low;
+                _ds18b20_num_devices++;
             }
             else if (cmd == ALARM_SEARCH){
-                ds18b20_alarms[2*ds18b20_num_alarms]=rom_value_High + bit_value*current_bit;
-                ds18b20_alarms[2*ds18b20_num_alarms+1]=rom_value_Low;
-                ds18b20_num_alarms++;
+                _ds18b20_alarms[2*_ds18b20_num_alarms]=rom_value_High + bit_value*current_bit;
+                _ds18b20_alarms[2*_ds18b20_num_alarms+1]=rom_value_Low;
+                _ds18b20_num_alarms++;
             }
         }
         else if (current_bit == 0){
             if (cmd == SEARCH_ROM){
-                ds18b20_devices[2*ds18b20_num_devices]=rom_value_High + bit_value*current_bit;
-                ds18b20_devices[2*ds18b20_num_devices+1]=rom_value_Low;
-                ds18b20_num_devices++;
-                if(ds18b20_num_devices<ROM_NUM){
-                    ds18b20_devices[2*ds18b20_num_devices]=rom_value_High;
-                    ds18b20_devices[2*ds18b20_num_devices+1]=rom_value_Low;
-                    ds18b20_num_devices++;
+                _ds18b20_devices[2*_ds18b20_num_devices]=rom_value_High + bit_value*current_bit;
+                _ds18b20_devices[2*_ds18b20_num_devices+1]=rom_value_Low;
+                _ds18b20_num_devices++;
+                if(_ds18b20_num_devices<ROM_NUM){
+                    _ds18b20_devices[2*_ds18b20_num_devices]=rom_value_High;
+                    _ds18b20_devices[2*_ds18b20_num_devices+1]=rom_value_Low;
+                    _ds18b20_num_devices++;
                 }
             }
             else if (cmd == ALARM_SEARCH){
-                ds18b20_alarms[2*ds18b20_num_alarms]=rom_value_High + bit_value*current_bit;
-                ds18b20_alarms[2*ds18b20_num_alarms+1]=rom_value_Low;
-                ds18b20_num_alarms++;
-                if(ds18b20_num_alarms<ROM_NUM){
-                    ds18b20_alarms[2*ds18b20_num_alarms]=rom_value_High;
-                ds18b20_alarms[2*ds18b20_num_alarms+1]=rom_value_Low;
-                    ds18b20_num_alarms++;
+                _ds18b20_alarms[2*_ds18b20_num_alarms]=rom_value_High + bit_value*current_bit;
+                _ds18b20_alarms[2*_ds18b20_num_alarms+1]=rom_value_Low;
+                _ds18b20_num_alarms++;
+                if(_ds18b20_num_alarms<ROM_NUM){
+                    _ds18b20_alarms[2*_ds18b20_num_alarms]=rom_value_High;
+                _ds18b20_alarms[2*_ds18b20_num_alarms+1]=rom_value_Low;
+                    _ds18b20_num_alarms++;
                 }
             }
         }
@@ -533,10 +533,10 @@ unsigned char ds18b20_search_devices(BYTE cmd){
     if (cmd == SEARCH_ROM){
         int i;
         unsigned char crc;
-        for (i=0; i<ds18b20_num_devices; i++){
-            crc = ds18b20_rom_crc(ds18b20_devices[2*i],ds18b20_devices[2*i+1]);
-            if (crc != (ds18b20_devices[2*i] >> 24)){
-                ds18b20_num_devices = 0;
+        for (i=0; i<_ds18b20_num_devices; i++){
+            crc = ds18b20_rom_crc(_ds18b20_devices[2*i],_ds18b20_devices[2*i+1]);
+            if (crc != (_ds18b20_devices[2*i] >> 24)){
+                _ds18b20_num_devices = 0;
                 return ERR_CRCFAIL;
             }
         }
@@ -545,10 +545,10 @@ unsigned char ds18b20_search_devices(BYTE cmd){
     else if (cmd == ALARM_SEARCH){
         int i;
         unsigned char crc;
-        for (i=0; i<ds18b20_num_alarms; i++){
-            crc = ds18b20_rom_crc(ds18b20_alarms[2*i],ds18b20_alarms[2*i+1]);
-            if (crc != (ds18b20_alarms[2*i] >> 24)){
-                ds18b20_num_alarms = 0;
+        for (i=0; i<_ds18b20_num_alarms; i++){
+            crc = ds18b20_rom_crc(_ds18b20_alarms[2*i],_ds18b20_alarms[2*i+1]);
+            if (crc != (_ds18b20_alarms[2*i] >> 24)){
+                _ds18b20_num_alarms = 0;
                 return ERR_CRCFAIL;
             }
         }
@@ -572,7 +572,7 @@ unsigned char ds18b20_rom_crc(UINT32 highBits,UINT32 lowBits){
     unsigned char temp = 1;
     dowcrc = 0;
     for (i=0; i<8; i++){
-        dowcrc += shiftRegister[i]*temp;
+        dowcrc += _shiftRegister[i]*temp;
         temp *= 2;
     }
     return dowcrc;
@@ -593,7 +593,7 @@ unsigned char ds18b20_scratchpad_crc(UINT32 highBits ,UINT32 lowBits){
     unsigned char temp = 1;
     dowcrc = 0;
     for (i=0; i<8; i++){
-        dowcrc += shiftRegister[i]*temp;
+        dowcrc += _shiftRegister[i]*temp;
         temp *= 2;
     }
     return dowcrc;
@@ -602,17 +602,17 @@ unsigned char ds18b20_scratchpad_crc(UINT32 highBits ,UINT32 lowBits){
 void ds18b20_crc_shiftReg_init(void){
     int i;
     for (i=0; i<8; i++)
-        shiftRegister[i] = 0;
+        _shiftRegister[i] = 0;
 }
 
 void ds18b20_crc_shiftReg_add(unsigned char x){
-    unsigned char input = x ^ shiftRegister[0];
-    shiftRegister[0] = shiftRegister[1];
-    shiftRegister[1] = shiftRegister[2];
-    shiftRegister[2] = input ^ shiftRegister[3];
-    shiftRegister[3] = input ^ shiftRegister[4];
-    shiftRegister[4] = shiftRegister[5];
-    shiftRegister[5] = shiftRegister[6];
-    shiftRegister[6] = shiftRegister[7];
-    shiftRegister[7] = input;
+    unsigned char input = x ^ _shiftRegister[0];
+    _shiftRegister[0] = _shiftRegister[1];
+    _shiftRegister[1] = _shiftRegister[2];
+    _shiftRegister[2] = input ^ _shiftRegister[3];
+    _shiftRegister[3] = input ^ _shiftRegister[4];
+    _shiftRegister[4] = _shiftRegister[5];
+    _shiftRegister[5] = _shiftRegister[6];
+    _shiftRegister[6] = _shiftRegister[7];
+    _shiftRegister[7] = input;
 }
