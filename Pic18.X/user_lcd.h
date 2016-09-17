@@ -116,6 +116,7 @@ void lcd_createChar(uint8_t, uint8_t[]);
 void lcd_setCursor(uint8_t, uint8_t); 
 void lcd_write(uint8_t);
 void lcd_command(uint8_t);
+void lcd_print_char(char);
 void lcd_print(char *, unsigned char);
 
 void lcd_send(uint8_t, uint8_t);

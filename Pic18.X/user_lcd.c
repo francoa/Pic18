@@ -23,7 +23,6 @@ void lcd_init(bool fourbitmode)
     else 
         _lcd_displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
 
-    lcd_begin(16, 1, LCD_5x8DOTS);  
 }
 
 void lcd_begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
@@ -218,6 +217,10 @@ void lcd_command(uint8_t value) {
 
 void lcd_write(uint8_t value) {
     lcd_send(value, HIGH);
+}
+
+void lcd_print_char(char c){
+    lcd_write(c);
 }
 
 void lcd_print(char * string, unsigned char size){

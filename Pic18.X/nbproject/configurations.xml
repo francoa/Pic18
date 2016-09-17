@@ -15,6 +15,9 @@
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_ds18b20.h</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_compare.h</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_lcd.h</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_hcsr04.h</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_counter.h</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_capture.h</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
@@ -36,6 +39,9 @@
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_ds18b20.c</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_compare.c</itemPath>
         <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_lcd.c</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_hcsr04.c</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_counter.c</itemPath>
+        <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/user_capture.c</itemPath>
       </logicalFolder>
       <itemPath>C:/Users/Franco/Documents/MPLABXProjects/Pic18/Pic18.X/main.c</itemPath>
     </logicalFolder>

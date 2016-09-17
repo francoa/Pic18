@@ -36,12 +36,12 @@
 #ifdef TOT
 
 /****   BUS PARAMETERS  ****/
-#define BUS_LOW()       LATBbits.LATB0 = 0
-#define BUS_HIGH()      LATBbits.LATB0 = 1
-#define BUS_RELEASE()   TRISBbits.TRISB0 = 1
-#define BUS_TAKE()      LATBbits.LATB0 = 0; TRISBbits.TRISB0 = 0
-#define BUS_STATE()     PORTBbits.RB0
-#define BUS_STATE2()    LATBbits.LATB0
+#define BUS_LOW()       LATAbits.LATA4 = 0
+#define BUS_HIGH()      LATAbits.LATA4 = 1
+#define BUS_RELEASE()   TRISAbits.TRISA4= 1
+#define BUS_TAKE()      LATAbits.LATA4 = 0; TRISAbits.TRISA4 = 0
+#define BUS_STATE()     PORTAbits.RA4
+#define BUS_STATE2()    LATAbits.LATA4
 /****   BUS PARAMETERS  ****/
 
 /****   TIMING PARAMETERS   ****/

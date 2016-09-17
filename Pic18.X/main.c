@@ -41,13 +41,17 @@ bool busy;
 //#define COMPARE_INT_DEMO
 //#define ONEWIRE_DEMO
 //#define DS18B20_DEMO
-#define DISPLAY_DEMO
+//#define DS18B20_LCD
+//#define DISPLAY_DEMO
+//#define HCSR04_DEMO
+#define COUNTER_DEMO
 
-#ifdef DS18B20_DEMO
+#if defined (DS18B20_DEMO) || defined(DS18B20_LCD)
     #include "system.h"
     #include "user_usart.h"
     #include "user_led.h"
     #include "user_ds18b20.h"
+    #include "user_lcd.h"
 #else
     #include "system.h"        /* System funct/params, like osc/peripheral config */
     #include "user_usart.h"   
@@ -57,6 +61,8 @@ bool busy;
     #include "user_compare.h"
     #include "user_ds18b20.h"
     #include "user_lcd.h"
+    #include "user_hcsr04.h"
+    #include "user_counter.h"
 #endif
 
 #ifdef USART_DEMO
@@ -187,7 +193,7 @@ void main (void){
     while(1){}
 }
 
-#elif defined (DS18B20_DEMO)
+#elif defined (DS18B20_DEMO) || defined(DS18B20_LCD)
 
 void printCommands(){
     M_WRITEUSART((char *)"\n\rAvailable Commands:\n\r\t1-> Read ROM\n\r\t2-> Alarm Search\n\r\t3-> Search (10) devices"
@@ -387,9 +393,14 @@ void read_T(){
             return;
         }   
     }
-    
+#ifdef DS18B20_DEMO
     sprintf(str,"\n\r%.4f",value);
     M_WRITEUSART(str);
+#else    
+    int i = sprintf(str,"\n\r%.4f",value);
+    lcd_setCursor(6,0);
+    lcd_print(str,i);
+#endif
 }
 
 int alarm_value(){
@@ -562,6 +573,7 @@ void command_parse(char cmd){
 }
 
 void main (void){
+    int i;
     ConfigureInterruptPriority(true);
     ConfigureInterrupt();
     usart_init(9600,false,false);
@@ -569,11 +581,28 @@ void main (void){
     while(!TRMT);
     putsUSART((char *)"Ready: ");
     printCommands();
+    
+#ifdef DS18B20_LCD
+    for (i=0; i<200; i++) 
+        __delay_ms(25);
+    lcd_init(false);
+    lcd_begin(16, 2, LCD_5x8DOTS);
+    lcd_setCursor(0,0);
+    lcd_print((char *)"TEMP: ",6);
+    device_search();
+#endif
     while(1){
+#ifdef DS18B20_DEMO
         if (PIR1bits.RCIF){
             command_parse(ReadUSART());
             PIR1bits.RCIF = 0;
         }
+#else
+        for (i=0; i<80; i++) 
+        __delay_ms(25);
+        t_conversion();
+        read_T();
+#endif
     }
 }
 
@@ -581,11 +610,70 @@ void main (void){
 
 void main(void)
 {
+    int i;
+    for (i=0; i<200; i++) 
+        __delay_ms(25);
     lcd_init(false);
     lcd_begin(16, 2, LCD_5x8DOTS);
-    lcd_setCursor(0,1);
+    lcd_setCursor(0,0);
     lcd_print((char *)"LIGHT:",6);
-    while(1){}
+    usart_init(9600,false,false);
+    while(1){
+        if (PIR1bits.RCIF){
+            lcd_print_char(ReadUSART());
+        }
+    }
+}
+
+#elif defined(HCSR04_DEMO)
+
+void main(void)
+{
+    int i = 0;
+    for (i=0; i<200; i++) 
+        __delay_ms(25);
+    char str[8];
+    
+    lcd_init(false);
+    lcd_begin(16, 2, LCD_5x8DOTS);
+    lcd_setCursor(0,0);
+    lcd_print((char *)"DIST: ",6);
+    
+    usart_init(9600,false,false);
+    hcsr04_setup();
+    while(1){
+        for (i=0; i < 200; i++)
+            __delay_ms(25);
+        i = sprintf(str,"%.4f",hcsr04_measure());   //60 ms between consecutive measures
+        if (i>0){
+            lcd_setCursor(6,0);
+            lcd_print(str,i);
+        }
+        else{
+            lcd_setCursor(6,0);
+            lcd_print((char *)"err",3);
+        }
+        //M_WRITEUSART(str);
+    }
+}
+
+#elif defined(COUNTER_DEMO)
+
+void main(void)
+{   
+    counter_setup(T0_PS_4);
+    fLED_1_Init();
+    fLED_1_Off();
+    
+    while(1){
+        __delay_ms(10);
+        counter_prepare(20);
+        busy = true;
+        fLED_1_On();
+        counter_init();
+        while(busy){};
+        fLED_1_Off();
+    }
 }
 
 #else
@@ -649,19 +737,27 @@ void low_isr(void)
 
 #endif
 
-#if defined(DS18B20_)
+#if defined(COUNTER_DEMO)
 
 #if defined(__XC) || defined(HI_TECH_C)
-void interrupt high_isr(void)
+    void interrupt high_isr(void)
 #elif defined (__18CXX)
-#pragma code high_isr=0x08
-#pragma interrupt high_isr
-void high_isr(void)
+    #pragma code high_isr=0x08
+    #pragma interrupt high_isr
+    void high_isr(void)
 #else
-#error "Invalid compiler selection for implemented ISR routines"
+    #error "Invalid compiler selection for implemented ISR routines"
 #endif
 {
-   
+    if (INTCONbits.TMR0IF == 1){
+        if (_counter_i==0){
+            counter_stop();
+            busy = false;
+        }
+        else
+            _counter_i--;
+        INTCONbits.TMR0IF = 0;
+    }
 }
 
 /* Low-priority interrupt routine */
@@ -675,7 +771,7 @@ void low_isr(void)
 #error "Invalid compiler selection for implemented ISR routines"
 #endif
 {
-    if (PIR1bits.RCIF == 1){
+    /*if (PIR1bits.RCIF == 1){
         PIR1bits.RCIF = 0;
         if (busy)
         {
@@ -688,7 +784,7 @@ void low_isr(void)
             command_parse(ReadUSART());
             busy = false;
         }
-    }
+    }*/
 }
 
 #endif
