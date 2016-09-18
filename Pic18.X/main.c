@@ -44,7 +44,8 @@ bool busy;
 //#define DS18B20_LCD
 //#define DISPLAY_DEMO
 //#define HCSR04_DEMO
-#define COUNTER_DEMO
+//#define COUNTER_DEMO
+#define CAPTURE_DEMO
 
 #if defined (DS18B20_DEMO) || defined(DS18B20_LCD)
     #include "system.h"
@@ -55,14 +56,15 @@ bool busy;
 #else
     #include "system.h"        /* System funct/params, like osc/peripheral config */
     #include "user_usart.h"   
-    #include "user_led.h"
-    #include "user_spi.h"
-    #include "user_extInt.h"
-    #include "user_compare.h"
-    #include "user_ds18b20.h"
-    #include "user_lcd.h"
-    #include "user_hcsr04.h"
-    #include "user_counter.h"
+//    #include "user_led.h"
+//    #include "user_spi.h"
+//    #include "user_extInt.h"
+//    #include "user_compare.h"
+//    #include "user_ds18b20.h"
+//    #include "user_lcd.h"
+//    #include "user_hcsr04.h"
+//    #include "user_counter.h"
+    #include "user_capture.h"
 #endif
 
 #ifdef USART_DEMO
@@ -630,7 +632,7 @@ void main(void)
 void main(void)
 {
     int i = 0;
-    for (i=0; i<200; i++) 
+    for (i=0; i<80; i++) 
         __delay_ms(25);
     char str[8];
     
@@ -674,6 +676,29 @@ void main(void)
         while(busy){};
         fLED_1_Off();
     }
+}
+
+#elif defined(CAPTURE_DEMO)
+
+void main(void)
+{
+    usart_init(9600,false,false);
+    char str[10];
+    int i;
+    busy = true;
+    for (i=0; i<80; i++) 
+        __delay_ms(25);
+    capture_setup();
+    capture_prepare();
+    while(!PORTCbits.RC2){};
+    capture_start();
+    while(busy){};
+    capture_stop();
+    float result = capture_read();
+    sprintf(str,"%.4f",result);
+    M_WRITEUSART(str);
+    M_WRITEUSART((char *)" Finished");
+    while(1){};
 }
 
 #else
@@ -737,7 +762,7 @@ void low_isr(void)
 
 #endif
 
-#if defined(COUNTER_DEMO)
+#if defined(COUNTER_DEMO) || defined(CAPTURE_DEMO)
 
 #if defined(__XC) || defined(HI_TECH_C)
     void interrupt high_isr(void)
@@ -749,7 +774,7 @@ void low_isr(void)
     #error "Invalid compiler selection for implemented ISR routines"
 #endif
 {
-    if (INTCONbits.TMR0IF == 1){
+    /*if (INTCONbits.TMR0IF == 1){
         if (_counter_i==0){
             counter_stop();
             busy = false;
@@ -757,6 +782,17 @@ void low_isr(void)
         else
             _counter_i--;
         INTCONbits.TMR0IF = 0;
+    }*/
+        
+    // When IPEN bit is cleared (default state), all interrupt handlers go here.
+        
+    if(PIR1bits.CCP1IF == 1){
+        busy = false;
+        PIR1bits.CCP1IF = 0;
+    }
+    else if(PIR1bits.TMR1IF == 1){
+        _capture_ofcounter++;
+        PIR1bits.TMR1IF = 0;
     }
 }
 
@@ -771,7 +807,16 @@ void low_isr(void)
 #error "Invalid compiler selection for implemented ISR routines"
 #endif
 {
-    /*if (PIR1bits.RCIF == 1){
+    
+    if(PIR1bits.CCP1IF == 1){
+        busy = false;
+        PIR1bits.CCP1IF = 0;
+    }
+    else if(PIR1bits.TMR1IF == 1){
+        _capture_ofcounter++;
+        PIR1bits.TMR1IF = 0;
+    }
+    /*else if (PIR1bits.RCIF == 1){
         PIR1bits.RCIF = 0;
         if (busy)
         {
