@@ -2,17 +2,20 @@
 
 void hcsr04_setup(){
     HCSR04_CONFIG;
-    //counter_setup(T0_PS_128);
+    capture_setup();
 }
 
-float hcsr04_measure(){
-    //counter_prepare();
+void hcsr04_measure(){
+    capture_prepare();
     TRIGPIN = 1;
     __delay_us(10);
     TRIGPIN = 0;
     while(!ECHOPIN){};
-    //counter_init();
-    while(ECHOPIN){};
-    //return counter_stop()/58;+
-    return 0;
+    capture_start();
+    return;
+}
+
+float hcsr04_read(){
+    float r = capture_read();
+    return r*(1000.0*US2CM);
 }

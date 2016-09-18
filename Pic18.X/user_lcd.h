@@ -77,8 +77,8 @@
 #define RWPIN   LATCbits.LATC1      // LOW: write to LCD.  HIGH: read from LCD.
 #define RWTRIS  TRISCbits.TRISC1
 
-#define EPIN    LATCbits.LATC2      // activated by a HIGH pulse.
-#define ETRIS   TRISCbits.TRISC2
+#define EPIN    LATAbits.LATA5      // activated by a HIGH pulse.
+#define ETRIS   TRISAbits.TRISA5
 
 #define DPIN    LATB
 #define DTRIS   TRISB

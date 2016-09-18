@@ -25,6 +25,8 @@
 
 #endif
 
+#include "user_capture.h"
+
 #ifndef _XTAL_FREQ
     #define _XTAL_FREQ      16000000L
 #endif
@@ -32,18 +34,19 @@
 /***    PINS    ***/
 #define TRIGPIN     LATAbits.LATA4
 #define TRIGTRIS    TRISAbits.TRISA4
-#define ECHOPIN     PORTAbits.RA5
-#define ECHOTRIS    TRISAbits.TRISA5
+#define ECHOPIN     PORTCbits.RC2
+#define ECHOTRIS    TRISCbits.TRISC2
 /***    PINS    ***/
 
 #define RANGE       (500) //cm
-#define CM2US       (58)
-#define US2CM       (1/58)
+#define CM2US       (58.0)
+#define US2CM       (1/58.0)
 
 #define HCSR04_CONFIG   TRIGPIN = 0; TRIGTRIS = 0; ECHOTRIS = 1
 
 void hcsr04_setup();
-float hcsr04_measure();     //RETURNS CM
+void hcsr04_measure();     
+float hcsr04_read();//RETURNS CM
 
 #endif	/* USER_HCSR04_H */
 

@@ -59,6 +59,7 @@ void capture_prepare(){
     T1CONbits.TMR1ON = 0;
     TMR1L = 0x00;
     TMR1H = 0x00;
+    CCPR1 = 0x0000;
     PIR1bits.CCP1IF = 0;
     PIR1bits.TMR1IF = 0;
     _capture_ofcounter = 0;

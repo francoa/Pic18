@@ -43,9 +43,9 @@ bool busy;
 //#define DS18B20_DEMO
 //#define DS18B20_LCD
 //#define DISPLAY_DEMO
-//#define HCSR04_DEMO
+#define HCSR04_DEMO
 //#define COUNTER_DEMO
-#define CAPTURE_DEMO
+//#define CAPTURE_DEMO
 
 #if defined (DS18B20_DEMO) || defined(DS18B20_LCD)
     #include "system.h"
@@ -55,15 +55,15 @@ bool busy;
     #include "user_lcd.h"
 #else
     #include "system.h"        /* System funct/params, like osc/peripheral config */
-    #include "user_usart.h"   
+//    #include "user_usart.h"   
 //    #include "user_led.h"
 //    #include "user_spi.h"
 //    #include "user_extInt.h"
 //    #include "user_compare.h"
 //    #include "user_ds18b20.h"
-//    #include "user_lcd.h"
-//    #include "user_hcsr04.h"
-//    #include "user_counter.h"
+    #include "user_lcd.h"
+    #include "user_hcsr04.h"
+    #include "user_counter.h"
     #include "user_capture.h"
 #endif
 
@@ -641,12 +641,12 @@ void main(void)
     lcd_setCursor(0,0);
     lcd_print((char *)"DIST: ",6);
     
-    usart_init(9600,false,false);
     hcsr04_setup();
     while(1){
-        for (i=0; i < 200; i++)
-            __delay_ms(25);
-        i = sprintf(str,"%.4f",hcsr04_measure());   //60 ms between consecutive measures
+        busy = true;
+        hcsr04_measure();
+        while(busy){};
+        i = sprintf(str,"%.4f",hcsr04_read());   //60 ms between consecutive measures
         if (i>0){
             lcd_setCursor(6,0);
             lcd_print(str,i);
@@ -655,7 +655,8 @@ void main(void)
             lcd_setCursor(6,0);
             lcd_print((char *)"err",3);
         }
-        //M_WRITEUSART(str);
+        for (i=0; i < 80; i++)
+            __delay_ms(25);
     }
 }
 
@@ -762,7 +763,7 @@ void low_isr(void)
 
 #endif
 
-#if defined(COUNTER_DEMO) || defined(CAPTURE_DEMO)
+#if defined(COUNTER_DEMO) || defined(CAPTURE_DEMO) || defined(HCSR04_DEMO)
 
 #if defined(__XC) || defined(HI_TECH_C)
     void interrupt high_isr(void)
@@ -788,6 +789,7 @@ void low_isr(void)
         
     if(PIR1bits.CCP1IF == 1){
         busy = false;
+        capture_stop();
         PIR1bits.CCP1IF = 0;
     }
     else if(PIR1bits.TMR1IF == 1){
