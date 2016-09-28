@@ -71,14 +71,14 @@
 /***    FUNCTION SET    ***/
 
 /***    PIN DEFINITION  ***/
-#define RSPIN   LATCbits.LATC0      // LOW: command.  HIGH: character.
-#define RSTRIS  TRISCbits.TRISC0
+#define RSPIN   LATCbits.LATC2      // LOW: command.  HIGH: character.
+#define RSTRIS  TRISCbits.TRISC2
 
-#define RWPIN   LATCbits.LATC1      // LOW: write to LCD.  HIGH: read from LCD.
-#define RWTRIS  TRISCbits.TRISC1
+#define RWPIN   LATCbits.LATC6      // LOW: write to LCD.  HIGH: read from LCD.
+#define RWTRIS  TRISCbits.TRISC6
 
-#define EPIN    LATAbits.LATA5      // activated by a HIGH pulse.
-#define ETRIS   TRISAbits.TRISA5
+#define EPIN    LATCbits.LATC7      // activated by a HIGH pulse.
+#define ETRIS   TRISCbits.TRISC7
 
 #define DPIN    LATB
 #define DTRIS   TRISB

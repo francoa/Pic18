@@ -29,7 +29,7 @@ void counter_prepare(WORD ms_time){
     // Frequency: (FOSC/4)/prescaler
     // Period: 1/Frequency [seconds]
     // Total time: regs * period
-    DWORD regs = ms_time * (_XTAL_FREQ/(4000*_prescaler)) ;
+    DWORD regs = ms_time * ((_XTAL_FREQ/4000)/_prescaler) ;
     _counter_i = 0;
     while(regs > 0xFFFF){
         _counter_i++;

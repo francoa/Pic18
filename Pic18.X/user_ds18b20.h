@@ -27,6 +27,7 @@
 
 //#include "linkedList.h"   //DYNAMIC MEMORY ALLOCATION NOT ADVICED ON PIC
 #include "user_usart.h"
+#include "user_counter.h"
 
 #ifndef _XTAL_FREQ
     #define _XTAL_FREQ      16000000L
@@ -36,12 +37,12 @@
 #ifdef TOT
 
 /****   BUS PARAMETERS  ****/
-#define BUS_LOW()       LATAbits.LATA4 = 0
-#define BUS_HIGH()      LATAbits.LATA4 = 1
-#define BUS_RELEASE()   TRISAbits.TRISA4= 1
-#define BUS_TAKE()      LATAbits.LATA4 = 0; TRISAbits.TRISA4 = 0
-#define BUS_STATE()     PORTAbits.RA4
-#define BUS_STATE2()    LATAbits.LATA4
+#define BUS_LOW()       LATCbits.LATC1 = 0
+#define BUS_HIGH()      LATCbits.LATC1 = 1
+#define BUS_RELEASE()   TRISCbits.TRISC1= 1
+#define BUS_TAKE()      LATCbits.LATC1 = 0; TRISCbits.TRISC1 = 0
+#define BUS_STATE()     PORTCbits.RC1
+#define BUS_STATE2()    LATCbits.LATC1
 /****   BUS PARAMETERS  ****/
 
 /****   TIMING PARAMETERS   ****/
@@ -149,5 +150,6 @@ UINT32 _ds18b20_devices[2*ROM_NUM];
 UINT32 _ds18b20_alarms[2*ROM_NUM];
 
 unsigned char _shiftRegister[8];
+bool _conversionBusy;
 
 #endif	/* USER_DS18B20_H */

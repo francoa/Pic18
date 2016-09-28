@@ -1,5 +1,12 @@
 #include "system.h"
 
+void InitAll(void)
+{
+    TRISA = 0xFF;
+    TRISB = 0xFF;
+    TRISC = 0xFF;
+}
+
 /* Refer to the device datasheet for information about available
 oscillator configurations. */
 void ConfigureOscillator(void)

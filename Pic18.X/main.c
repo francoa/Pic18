@@ -43,28 +43,36 @@ bool busy;
 //#define DS18B20_DEMO
 //#define DS18B20_LCD
 //#define DISPLAY_DEMO
-#define HCSR04_DEMO
+//#define HCSR04_DEMO
 //#define COUNTER_DEMO
 //#define CAPTURE_DEMO
+#define PWM_DEMO
 
-#if defined (DS18B20_DEMO) || defined(DS18B20_LCD)
+#if defined (DS18B20_DEMO)
     #include "system.h"
     #include "user_usart.h"
     #include "user_led.h"
     #include "user_ds18b20.h"
     #include "user_lcd.h"
+#elif defined (DS18B20_LCD)
+    #include "system.h"        /* System funct/params, like osc/peripheral config */
+    #include "user_ds18b20.h"
+    #include "user_lcd.h"
+    #include "user_counter.h"
+    #include "user_led.h"
 #else
     #include "system.h"        /* System funct/params, like osc/peripheral config */
 //    #include "user_usart.h"   
-//    #include "user_led.h"
+    //#include "user_led.h"
 //    #include "user_spi.h"
 //    #include "user_extInt.h"
 //    #include "user_compare.h"
 //    #include "user_ds18b20.h"
     #include "user_lcd.h"
-    #include "user_hcsr04.h"
-    #include "user_counter.h"
-    #include "user_capture.h"
+    //#include "user_hcsr04.h"
+    //#include "user_counter.h"
+    //#include "user_capture.h"
+    #include "user_pwm.h"
 #endif
 
 #ifdef USART_DEMO
@@ -195,7 +203,7 @@ void main (void){
     while(1){}
 }
 
-#elif defined (DS18B20_DEMO) || defined(DS18B20_LCD)
+#elif defined (DS18B20_DEMO)
 
 void printCommands(){
     M_WRITEUSART((char *)"\n\rAvailable Commands:\n\r\t1-> Read ROM\n\r\t2-> Alarm Search\n\r\t3-> Search (10) devices"
@@ -395,14 +403,8 @@ void read_T(){
             return;
         }   
     }
-#ifdef DS18B20_DEMO
     sprintf(str,"\n\r%.4f",value);
     M_WRITEUSART(str);
-#else    
-    int i = sprintf(str,"\n\r%.4f",value);
-    lcd_setCursor(6,0);
-    lcd_print(str,i);
-#endif
 }
 
 int alarm_value(){
@@ -608,6 +610,64 @@ void main (void){
     }
 }
 
+#elif defined(DS18B20_LCD)
+
+#define STR(x,y)  lcd_setCursor(6,0);str[0]='E';str[1]='R';str[2]=x+'0';str[3]=' ';str[4]=y+'0';str[5]='\0';lcd_print(str,5)
+
+void main (void){
+    int i;
+    unsigned char result;
+    char str[8];
+    float value;
+    
+    for (i=0; i<10; i++) 
+        __delay_ms(25);
+    
+    InitAll();
+    
+    lcd_init(false);
+    lcd_begin(16, 2, LCD_5x8DOTS);
+    lcd_setCursor(0,0);
+    lcd_print((char *)"TEMP: ",6);
+    
+    counter_setup(T0_PS_256);
+
+    result = ds18b20_search_devices(SEARCH_ROM);
+    if (result != OK){
+        STR(0,result);
+        while(1){};
+    }
+    
+    OSCCONbits.IDLEN = 1; //FOR IDLE MODE INSTEAD OF SLEEP MODE
+    
+    while(1){
+        //for (i=0; i<80; i++) 
+        //    __delay_ms(25);
+        counter_prepare(1500);
+        result = ds18b20_T_Conversion();
+        if(result != OK){
+            STR(1,result);
+        }
+        else
+        {
+            result = ds18b20_read_T(&value);
+            if (result != OK)
+            {
+                STR(2,result);
+            }
+            else{
+                int i = sprintf(str,"%.4f",value);
+                lcd_setCursor(6,0);
+                lcd_print(str,i);
+            }
+        }
+        #asm
+        SLEEP
+        #endasm
+        __delay_ms(25);
+    }
+}
+
 #elif defined(DISPLAY_DEMO)
 
 void main(void)
@@ -664,13 +724,13 @@ void main(void)
 
 void main(void)
 {   
-    counter_setup(T0_PS_4);
+    counter_setup(T0_PS_256);
     fLED_1_Init();
     fLED_1_Off();
     
     while(1){
         __delay_ms(10);
-        counter_prepare(20);
+        counter_prepare(2000);
         busy = true;
         fLED_1_On();
         counter_init();
@@ -699,6 +759,21 @@ void main(void)
     sprintf(str,"%.4f",result);
     M_WRITEUSART(str);
     M_WRITEUSART((char *)" Finished");
+    while(1){};
+}
+
+#elif defined(PWM_DEMO)
+
+void main(void)
+{
+    int i;
+    for (i=0; i<10; i++) 
+        __delay_ms(25);
+    
+    InitAll();
+    
+    pwm_init(10000,10,TMR2_PRESCALER_4);
+    
     while(1){};
 }
 
@@ -763,6 +838,45 @@ void low_isr(void)
 
 #endif
 
+#if defined(DS18B20_LCD)
+
+#if defined(__XC) || defined(HI_TECH_C)
+    void interrupt high_isr(void)
+#elif defined (__18CXX)
+    #pragma code high_isr=0x08
+    #pragma interrupt high_isr
+    void high_isr(void)
+#else
+    #error "Invalid compiler selection for implemented ISR routines"
+#endif
+{
+    if (INTCONbits.TMR0IF == 1){
+        if (_counter_i==0){
+            counter_stop();
+            _conversionBusy = false;
+        }
+        else
+            _counter_i--;
+        INTCONbits.TMR0IF = 0;
+    }
+}
+
+/* Low-priority interrupt routine */
+#if defined(__XC) || defined(HI_TECH_C)
+void low_priority interrupt low_isr(void)
+#elif defined (__18CXX)
+#pragma code low_isr=0x18
+#pragma interruptlow low_isr
+void low_isr(void)
+#else
+#error "Invalid compiler selection for implemented ISR routines"
+#endif
+{
+ 
+}
+
+#endif
+
 #if defined(COUNTER_DEMO) || defined(CAPTURE_DEMO) || defined(HCSR04_DEMO)
 
 #if defined(__XC) || defined(HI_TECH_C)
@@ -775,7 +889,7 @@ void low_isr(void)
     #error "Invalid compiler selection for implemented ISR routines"
 #endif
 {
-    /*if (INTCONbits.TMR0IF == 1){
+    if (INTCONbits.TMR0IF == 1){
         if (_counter_i==0){
             counter_stop();
             busy = false;
@@ -783,11 +897,11 @@ void low_isr(void)
         else
             _counter_i--;
         INTCONbits.TMR0IF = 0;
-    }*/
+    }
         
     // When IPEN bit is cleared (default state), all interrupt handlers go here.
         
-    if(PIR1bits.CCP1IF == 1){
+    else if(PIR1bits.CCP1IF == 1){
         busy = false;
         capture_stop();
         PIR1bits.CCP1IF = 0;

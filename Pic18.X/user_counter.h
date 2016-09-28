@@ -33,7 +33,7 @@
 #define T0_PS_4   0b0010
 #define T0_PS_8   0b0100
 #define T0_PS_16  0b0110
-#define T0_PS_32  0b1000 
+#define T0_PS_32  0b1000
 #define T0_PS_64  0b1010
 #define T0_PS_128 0b1100
 #define T0_PS_256 0b1110
@@ -45,7 +45,7 @@ void counter_init(void);
 void counter_stop(void);     //RETURNS US
 
 unsigned char _counter_i;
-unsigned char _prescaler;
+int _prescaler;
 
 #endif	/* USER_COUNTER_H */
 

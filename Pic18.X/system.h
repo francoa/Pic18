@@ -37,6 +37,7 @@
 functions, and other non-peripheral microcontroller initialization functions
 go here. */
 
+void InitAll(void);
 void ConfigureOscillator(void); /* Handles clock switching/osc initialization */
 void ConfigureInterruptPriority(bool);
 void ConfigureInterrupt(void);

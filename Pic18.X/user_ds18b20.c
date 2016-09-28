@@ -102,7 +102,12 @@ unsigned char ds18b20_T_Conversion(void){
         }
         ds18b20_write_byte(SKIP_ROM);
         ds18b20_write_byte(CONVERT_T);
-        while(!ds18b20_read_bit());
+        _conversionBusy = true;
+        counter_init();
+        while(!ds18b20_read_bit() && _conversionBusy);
+        counter_stop();
+        if (!_conversionBusy)
+            return ERR_UNK;
     }
     return OK;
 }
